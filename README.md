@@ -2,7 +2,7 @@ Arkfolio
 =======
 Portfolio tracker
 
-Not ready, building is in progress
+Not ready, building is in progress.
 
 
 Donations
