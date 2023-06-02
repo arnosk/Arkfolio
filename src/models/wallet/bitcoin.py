@@ -8,7 +8,7 @@ Dynamically search for SiteModel
 """
 import logging
 
-from src.data.dbschemadata import Site
+from src.data.dbschemadata import Site, Transaction, Wallet
 from src.data.dbschematypes import SiteType
 from src.db.db import Db
 from src.models.sitemodel import SiteModel
@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 
 
 class Bitcoin(SiteModel):
-    def model_init(self, db: Db) -> None:
+    def __init__(self):
+        super().__init__()
         self.site = Site(
             id=1,
             name=self.__class__.__name__,
@@ -27,4 +28,7 @@ class Bitcoin(SiteModel):
             hasprice=False,
             enabled=True,
         )
-        self._model_init(db)
+
+    def get_transactions(self, wallets: list[Wallet]) -> list[Transaction]:
+        log.debug(f"Start getting transactions for {self.site.name}")
+        return []

@@ -32,7 +32,7 @@ class Site:
 class Profile:
     """Dataclass for profile"""
 
-    name: str
+    name: str = "temp"
     id: int = 0
     password: str = ""
     enabled: bool = True

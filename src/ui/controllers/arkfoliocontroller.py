@@ -41,10 +41,11 @@ class ArkfolioController:
         self.set_profile(name="Profile 1")
 
         # TODO: User must be able to choose form sites to create new wallets
-        sitemodels: list[SiteModel] = self.srv.get_sitemodels()
+        # sitemodels: list[SiteModel] = self.srv.get_sitemodels()
+        sitemodels: dict[int, SiteModel] = self.srv.sitemodels
 
         # Temp for testing first site, create wallet in db
-        self.create_wallet(sitemodels[0], "1PeizMg76Cf96nUQrYg8xuoZWLQozU5zGW")
+        self.create_wallet(sitemodels[1], "1PeizMg76Cf96nUQrYg8xuoZWLQozU5zGW")
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name

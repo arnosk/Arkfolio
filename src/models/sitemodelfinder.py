@@ -28,12 +28,24 @@ def inheritors(klass):
     return subclasses
 
 
-def find_all_sitemodels() -> set[SiteModel]:
+def find_all_sitemodelsOld() -> set[SiteModel]:
     sitemodel_classnames = inheritors(SiteModel)
     log.debug(f"Get all Site Models: {sitemodel_classnames}")
 
     sitemodels = set()
     for classname in sitemodel_classnames:
         sitemodels.add(classname())
+
+    return sitemodels
+
+
+def find_all_sitemodels() -> dict[int, SiteModel]:
+    sitemodel_classnames = inheritors(SiteModel)
+    log.debug(f"Get all Site Models: {sitemodel_classnames}")
+
+    sitemodels = {}
+    for classname in sitemodel_classnames:
+        sitemodel: SiteModel = classname()
+        sitemodels[sitemodel.site.id] = sitemodel
 
     return sitemodels

@@ -60,6 +60,15 @@ def get_wallet(id: int, db: Db) -> tuple:
     return result[0]
 
 
+def get_all_wallets(db: Db) -> list:
+    query = "SELECT * FROM wallets"
+    result = db.query(query)
+    log.debug(f"Record of wallets in database: {result}")
+    if len(result) == 0:
+        log.info(f"No records found of a wallet in database")
+    return result
+
+
 def update_wallet(wallet: Wallet, db: Db) -> None:
     query = "UPDATE wallets SET address=?, enabled=? WHERE id=?;"
     queryargs = (wallet.address, wallet.enabled, wallet.id)
