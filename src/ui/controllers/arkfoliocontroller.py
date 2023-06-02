@@ -44,7 +44,7 @@ class ArkfolioController:
         sitemodels: list[SiteModel] = self.srv.get_sitemodels()
 
         # Temp for testing first site, create wallet in db
-        self.create_wallet(sitemodels[0], "1GoCuMz2EZxJNdEAKZxhdwvFBfCCHL4aJo")
+        self.create_wallet(sitemodels[0], "1PeizMg76Cf96nUQrYg8xuoZWLQozU5zGW")
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name
