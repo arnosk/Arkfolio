@@ -1,0 +1,6 @@
+cfscrape
+pandas
+python_dateutil
+requests
+urllib3
+tzlocal
