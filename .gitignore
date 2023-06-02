@@ -1,6 +1,7 @@
 configPrivate.py
 configPublic.py
 coinimages/
+images/
 output/
 *.xls?
 *.csv

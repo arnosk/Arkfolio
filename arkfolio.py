@@ -27,10 +27,11 @@ def __main__():
         # so split up the server and ui into 2 different programs
         # Server gets asset prices and wallet txs every x min.
         srv = ArkfolioServer(db)
-        srv.run()
-
         view = ArkfolioViewCli()
         app = ArkfolioController(view, db, srv)
+
+        # TODO: Implement threading or seperate programs
+        srv.run()
         app.run()
     except Exception as e:
         log.exception(e)
