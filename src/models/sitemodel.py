@@ -12,7 +12,7 @@ The settings can be changed by user in Database, but must be initialized
 import logging
 from abc import ABC, abstractmethod
 
-from src.data.dbschemadata import Price, Site, Transaction, Wallet
+from src.data.dbschemadata import Price, Site, Transaction
 from src.db.db import Db
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
 
@@ -38,7 +38,7 @@ class SiteModel(ABC):
         self.site.enabled = site[6]
         log.debug(f"Init of sitemodel ready {self.site}")
 
-    def get_transactions(self, wallets: list[Wallet]) -> list[Transaction]:
+    def get_transactions(self, addresses: list[str]) -> list[Transaction]:
         raise NotImplementedError(
             f"Site model {self.__class__.__name__} doesn't have transactions"
         )

@@ -38,8 +38,16 @@ class ArkfolioServer:
         log.debug(f"Found sitemodels: {self.sitemodels}")
         log.debug(f"Found wallets: {sites_wallets}")
 
-        # loop through site_wallets to get txs
-        # how to get from Site object to the SiteModel ???
+        for siteid, wallets in sites_wallets.items():
+            addresses: list[str] = []
+            for wallet in wallets:
+                addresses.append(wallet.address)
+            log.debug(
+                f"Found addresses for {self.sitemodels[siteid].site.name} "
+                f"are {addresses}"
+            )
+            self.sitemodels[siteid].get_transactions(addresses)
+
         # For blockchain wallet: do this per wallet address or per chain api
         # with use of asyncio, ccxt
 
@@ -47,8 +55,6 @@ class ArkfolioServer:
         # assets_f_prices: list[asset] = get_all_assets_prices()
         # retrieve new prices or historical prices if needed
 
-
-# sites filled by an programmer of this program
 
 # User has to add a wallet or exchange,
 # this will add a wallet and a site for interfacing

@@ -8,7 +8,7 @@ Dynamically search for SiteModel
 """
 import logging
 
-from src.data.dbschemadata import Site, Transaction, Wallet
+from src.data.dbschemadata import Site, Transaction
 from src.data.dbschematypes import SiteType
 from src.db.db import Db
 from src.models.sitemodel import SiteModel
@@ -29,6 +29,6 @@ class Bitcoin(SiteModel):
             enabled=True,
         )
 
-    def get_transactions(self, wallets: list[Wallet]) -> list[Transaction]:
+    def get_transactions(self, addresses: list[str]) -> list[Transaction]:
         log.debug(f"Start getting transactions for {self.site.name}")
         return []
