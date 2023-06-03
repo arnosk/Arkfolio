@@ -15,6 +15,7 @@ from src.data.dbschemadata import Profile, Site, SiteWallets, Wallet
 from src.db.db import Db
 from src.db.dbinit import db_init
 from src.db.dbwallet import get_all_wallets
+from src.models import sitemodel
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
 
@@ -37,9 +38,11 @@ class ArkfolioServer:
 
         # sites_w_tx: list[Site] = get_all_sites_with_transaction()
 
-        # sites_wallets: dict[int, list[Wallet]] = self.get_wallets_for_txsite(
-        #    self.get_sitemodels(), self.db
-        # )
+        sites_wallets: dict[int, list[Wallet]] = self.get_wallets_for_txsite(
+            self.sitemodels, self.db
+        )
+        log.debug(f"Found sitemodels: {self.sitemodels}")
+        log.debug(f"Found wallets: {sites_wallets}")
 
         # sites_wallets: list[SiteWallets] = couple_site_to_wallets(sites_w_tx, wallets)
 
@@ -56,7 +59,7 @@ class ArkfolioServer:
         self, sitemodels: dict[int, SiteModel], db: Db
     ) -> dict[int, list[Wallet]]:
         walletsraw: list = get_all_wallets(self.db)
-        res = {}
+        wallets = {}
         for rawdata in walletsraw:
             siteid = rawdata[1]
             profileid = rawdata[2]
@@ -64,17 +67,15 @@ class ArkfolioServer:
             enabled: bool = rawdata[4]
             if enabled:
                 sitemodel: SiteModel = sitemodels[siteid]
-                wal = Wallet(
+                wallet = Wallet(
                     site=sitemodel.site,
                     profile=prof,
                     id=rawdata[0],
                     address=rawdata[3],
                     enabled=rawdata[4],
                 )
-                res.setdefault(siteid, []).append(wal)
-                # res[siteid].append(wal)
-
-        return res
+                wallets.setdefault(siteid, []).append(wallet)
+        return wallets
 
 
 # sites filled by an programmer of this program
