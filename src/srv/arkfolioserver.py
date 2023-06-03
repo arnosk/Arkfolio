@@ -1,23 +1,19 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-06-02
+@modified: 2023-06-03
 
 Server for ArkFolio
 
 """
 import logging
-import site
-from typing import Protocol
 
-import config
-from src.data.dbschemadata import Profile, Site, SiteWallets, Wallet
+from src.data.dbschemadata import Wallet
 from src.db.db import Db
 from src.db.dbinit import db_init
-from src.db.dbwallet import get_all_wallets
-from src.models import sitemodel
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
+from src.srv.serverhelper import get_wallets_per_site
 
 log = logging.getLogger(__name__)
 
@@ -36,15 +32,11 @@ class ArkfolioServer:
     def run(self):
         log.debug("Starting Arkfolio server")
 
-        # sites_w_tx: list[Site] = get_all_sites_with_transaction()
-
-        sites_wallets: dict[int, list[Wallet]] = self.get_wallets_for_txsite(
+        sites_wallets: dict[int, list[Wallet]] = get_wallets_per_site(
             self.sitemodels, self.db
         )
         log.debug(f"Found sitemodels: {self.sitemodels}")
         log.debug(f"Found wallets: {sites_wallets}")
-
-        # sites_wallets: list[SiteWallets] = couple_site_to_wallets(sites_w_tx, wallets)
 
         # loop through site_wallets to get txs
         # how to get from Site object to the SiteModel ???
@@ -54,28 +46,6 @@ class ArkfolioServer:
         # sites_w_price: list[site] = get_all_sites_with_prices()
         # assets_f_prices: list[asset] = get_all_assets_prices()
         # retrieve new prices or historical prices if needed
-
-    def get_wallets_for_txsite(
-        self, sitemodels: dict[int, SiteModel], db: Db
-    ) -> dict[int, list[Wallet]]:
-        walletsraw: list = get_all_wallets(self.db)
-        wallets = {}
-        for rawdata in walletsraw:
-            siteid = rawdata[1]
-            profileid = rawdata[2]
-            prof = Profile(id=profileid)
-            enabled: bool = rawdata[4]
-            if enabled:
-                sitemodel: SiteModel = sitemodels[siteid]
-                wallet = Wallet(
-                    site=sitemodel.site,
-                    profile=prof,
-                    id=rawdata[0],
-                    address=rawdata[3],
-                    enabled=rawdata[4],
-                )
-                wallets.setdefault(siteid, []).append(wallet)
-        return wallets
 
 
 # sites filled by an programmer of this program

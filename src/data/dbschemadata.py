@@ -50,14 +50,6 @@ class Wallet:
 
 
 @dataclass
-class SiteWallets:
-    """Dataclass for site and coupled wallets"""
-
-    site: Site
-    wallets: list[Wallet]
-
-
-@dataclass
 class Asset:
     """Dataclass for an asset"""
 
