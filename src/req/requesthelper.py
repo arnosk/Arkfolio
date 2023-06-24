@@ -154,6 +154,12 @@ class RequestHelper:
             url = url[:-1]
         return url
 
+    def attach_view_update_waiting_time(
+        self, fn_waiting_time: Callable[[int], None]
+    ) -> None:
+        """Set the viewers waiting time function to the coinprice program"""
+        self.view_update_waiting_time = fn_waiting_time
+
     def sleep_print_time(self, sleeping_time: int):
         """
         Sleep and print countdown timer
@@ -164,12 +170,6 @@ class RequestHelper:
         for i in range(sleeping_time, 0, -1):
             self.view_update_waiting_time(i)
             time.sleep(1)
-
-    def attach_view_update_waiting_time(
-        self, fn_waiting_time: Callable[[int], None]
-    ) -> None:
-        """Set the viewers waiting time function to the coinprice program"""
-        self.view_update_waiting_time = fn_waiting_time
 
 
 # ****************************************************
@@ -255,11 +255,20 @@ def retry_calls(
                         f"{location} query for {url} failed after {retries} tries",
                     )
 
-                log.debug(
-                    f"In retry_call for {location}-{url}. Got 429. Backing off for "
-                    f"{backoff_in_seconds} seconds",
-                )
-                time.sleep(backoff_in_seconds)
+                if "Retry-After" in result.headers.keys():
+                    sleep_time = int(result.headers["Retry-After"]) + 1
+                    # self.sleep_print_time(sleep_time)
+                    log.debug(
+                        f"In retry_call for {location}-{url}. Got 429. Retrying after "
+                        f"{sleep_time} seconds",
+                    )
+                    time.sleep(sleep_time)
+                else:
+                    log.debug(
+                        f"In retry_call for {location}-{url}. Got 429. Backing off for "
+                        f"{backoff_in_seconds} seconds",
+                    )
+                    time.sleep(backoff_in_seconds)
                 tries -= 1
                 continue
 
