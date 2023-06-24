@@ -3,6 +3,7 @@ configPublic.py
 coinimages/
 images/
 output/
+log/
 *.xls?
 *.csv
 *.db
