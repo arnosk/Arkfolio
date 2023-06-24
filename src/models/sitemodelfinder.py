@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-06-02
+@modified: 2023-06-24
 
 Dynamically search for SiteModel
 
@@ -26,17 +26,6 @@ def inheritors(klass):
                 subclasses.add(child)
                 work.append(child)
     return subclasses
-
-
-def find_all_sitemodelsOld() -> set[SiteModel]:
-    sitemodel_classnames = inheritors(SiteModel)
-    log.debug(f"Get all Site Models: {sitemodel_classnames}")
-
-    sitemodels = set()
-    for classname in sitemodel_classnames:
-        sitemodels.add(classname())
-
-    return sitemodels
 
 
 def find_all_sitemodels() -> dict[int, SiteModel]:
