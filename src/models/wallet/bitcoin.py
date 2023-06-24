@@ -7,6 +7,7 @@ Dynamically search for SiteModel
 
 """
 import logging
+import time
 
 from src.data.dbschemadata import Site, Transaction
 from src.data.dbschematypes import SiteType
@@ -46,6 +47,7 @@ def _get_transactins_blockchaininfo(
     First tx from blockchain.info is newest
     """
     transactions = {}
+    backoff = 15
     for acc in accounts:
         finished = False
         limit = 10
@@ -61,7 +63,7 @@ def _get_transactins_blockchaininfo(
                 handle_429=True,
                 # If we get a 429 then their docs suggest 10 seconds
                 # https://blockchain.info/
-                backoff_in_seconds=60,
+                backoff_in_seconds=backoff,
             )
 
             n_tx = resp["n_tx"]
@@ -100,5 +102,7 @@ def _get_transactins_blockchaininfo(
                 )
 
             finished = tx_i > n_tx or tx_time < int(last_time)
+            log.debug(f"Limiting queries to 1 per {backoff} seconds")
+            time.sleep(backoff)
 
     return transactions
