@@ -257,7 +257,6 @@ def retry_calls(
 
                 if "Retry-After" in result.headers.keys():
                     sleep_time = int(result.headers["Retry-After"]) + 1
-                    # self.sleep_print_time(sleep_time)
                     log.debug(
                         f"In retry_call for {location}-{url}. Got 429. Retrying after "
                         f"{sleep_time} seconds",
