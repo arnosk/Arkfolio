@@ -36,7 +36,7 @@ class Bitcoin(SiteModel):
 
     def get_transactions(self, addresses: list[str]) -> list[Transaction]:
         log.debug(f"Start getting transactions for {self.site.name}")
-        x = _get_transactins_blockchaininfo(addresses)
+        x = _get_transactins_blockchaininfo(addresses, Timestamp(1682081512))
         log.debug(f"Result: {x}")
         return []
 
@@ -60,8 +60,6 @@ def _get_transactins_blockchaininfo(
             resp = request_get_dict(
                 url=f"https://blockchain.info/rawaddr/{acc}?{params}",
                 handle_429=True,
-                # If we get a 429 then their docs suggest 10 seconds
-                # https://blockchain.info/
                 backoff_in_seconds=backoff,
             )
 
@@ -78,6 +76,10 @@ def _get_transactins_blockchaininfo(
                 address_in = ""
                 address_out = ""
                 tx_time = tx["time"]
+
+                if tx_time <= int(last_time):
+                    break
+
                 for input in tx["inputs"]:
                     # print(f"input: {input}")
                     address_in = input["prev_out"]["addr"]
@@ -100,8 +102,8 @@ def _get_transactins_blockchaininfo(
                     f"From {tx_in} {address_in} to {tx_out} {address_out} "
                 )
 
-            finished = tx_i >= n_tx or tx_time < int(last_time)
-            log.debug(f"Limiting queries to 1 per {backoff} seconds")
+            finished = tx_i >= n_tx or tx_time <= int(last_time)
+            log.debug(f"Limiting requests to 1 query per {backoff} seconds")
             time.sleep(backoff)
 
     return transactions
