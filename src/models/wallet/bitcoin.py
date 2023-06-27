@@ -9,6 +9,7 @@ Dynamically search for SiteModel
 import logging
 import time
 
+import config
 from src.data.dbschemadata import Site, Transaction
 from src.data.dbschematypes import SiteType
 from src.data.types import Timestamp
@@ -47,14 +48,13 @@ def _get_transactins_blockchaininfo(
     First tx from blockchain.info is newest
     """
     transactions = {}
-    backoff = 15
+    backoff = config.BLOCKCHAININFO_BACKOFF
+    limit = config.BLOCKCHAININFO_LIMIT
     for acc in accounts:
         finished = False
-        limit = 10
-        offset = 0
         tx_i = 0
         tx_time = 1
-        while not finished:  # tx_time > int(last_time):
+        while not finished:
             offset = tx_i
             params = f"limit={limit}&offset={offset}"
 
