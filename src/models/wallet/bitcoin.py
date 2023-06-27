@@ -101,7 +101,7 @@ def _get_transactins_blockchaininfo(
                     f"From {tx_in} {address_in} to {tx_out} {address_out} "
                 )
 
-            finished = tx_i > n_tx or tx_time < int(last_time)
+            finished = tx_i >= n_tx or tx_time < int(last_time)
             log.debug(f"Limiting queries to 1 per {backoff} seconds")
             time.sleep(backoff)
 
