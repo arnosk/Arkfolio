@@ -49,14 +49,13 @@ def _get_transactins_blockchaininfo(
     """
     transactions = {}
     backoff = config.BLOCKCHAININFO_BACKOFF
-    limit = config.BLOCKCHAININFO_LIMIT
     for acc in accounts:
         finished = False
         tx_i = 0
         tx_time = 1
         while not finished:
             offset = tx_i
-            params = f"limit={limit}&offset={offset}"
+            params = f"offset={offset}"
 
             resp = request_get_dict(
                 url=f"https://blockchain.info/rawaddr/{acc}?{params}",
