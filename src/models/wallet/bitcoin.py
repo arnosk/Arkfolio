@@ -8,10 +8,11 @@ Dynamically search for SiteModel
 """
 import logging
 import time
+from re import T
 
 import config
-from src.data.dbschemadata import Site, Transaction
-from src.data.dbschematypes import SiteType
+from src.data.dbschemadata import Site, Transaction, TransactionRaw
+from src.data.dbschematypes import SiteType, TransactionType
 from src.data.types import Timestamp
 from src.db.db import Db
 from src.func.helperfunc import convert_timestamp
@@ -43,11 +44,11 @@ class Bitcoin(SiteModel):
 
 def _get_transactins_blockchaininfo(
     accounts: list[str], last_time: Timestamp = Timestamp(0)
-) -> dict[str, tuple[bool, float]]:
+) -> list[TransactionRaw]:
     """May raise RemoteError or KeyError
     First tx from blockchain.info is newest
     """
-    transactions = {}
+    transactions: list[TransactionRaw] = []
     backoff = config.BLOCKCHAININFO_BACKOFF
     for acc in accounts:
         finished = False
@@ -69,8 +70,7 @@ def _get_transactins_blockchaininfo(
             for tx in resp["txs"]:
                 tx_i = tx_i + 1
                 # print(f"TX {tx_i}: {tx}")
-                tx_in = False
-                tx_out = False
+                tx_type = TransactionType.UNDEF_UNDEFINED
                 tx_fee = 0
                 tx_value = 0
                 address_in = ""
@@ -84,7 +84,7 @@ def _get_transactins_blockchaininfo(
                     # print(f"input: {input}")
                     address_in = input["prev_out"]["addr"]
                     if address_in == acc:
-                        tx_in = True
+                        tx_type = TransactionType.IN_UNDEFINED
                         tx_fee = tx["fee"]
                         tx_value = input["value"]
 
@@ -92,15 +92,24 @@ def _get_transactins_blockchaininfo(
                     # print(f"output {output}")
                     addr = output.get("addr", "unknown")
                     if addr == acc:
-                        tx_out = True
+                        tx_type = TransactionType.OUT_UNDEFINED
                         address_out = addr
                         tx_value = output["value"]
 
-                timestr = convert_timestamp(tx_time)
-                print(
-                    f"tx {tx_i}: {timestr} in {tx_in}, out {tx_out}, fee {tx_fee}, value {tx_value}, "
-                    f"From {tx_in} {address_in} to {tx_out} {address_out} "
+                txn = TransactionRaw(
+                    transactiontype=tx_type,
+                    timestamp=tx_time,
+                    txid=tx["hash"],
+                    quantity=tx_value,
+                    fee=tx_fee,
+                    from_wallet=address_in,
+                    to_wallet=address_out,
+                    quote_asset="BTC",
+                    fee_asset="BTC",
                 )
+                transactions.append(txn)
+                timestr = convert_timestamp(tx_time)
+                print(f"{tx_i}: {txn}")
 
             finished = tx_i >= n_tx or tx_time <= int(last_time)
             log.debug(f"Limiting requests to 1 query per {backoff} seconds")

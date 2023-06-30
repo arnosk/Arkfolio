@@ -69,14 +69,31 @@ class Transaction:
     timestamp: Timestamp
     transactiontype: TransactionType
     site: Site
+    txid: str
     from_wallet: Wallet
     to_wallet: Wallet
+    quantity: Money
+    fee: Money
     quote_asset: Asset
     base_asset: Asset
     fee_asset: Asset
-    quantity: Money
-    fee: Money
+    note: str = ""
+
+
+@dataclass
+class TransactionRaw:
+    """Dataclass for writing raw transactions to db"""
+
+    timestamp: int
+    transactiontype: TransactionType
     txid: str
+    from_wallet: str
+    to_wallet: str
+    quantity: int
+    fee: int
+    quote_asset: str = ""
+    base_asset: str = ""
+    fee_asset: str = ""
     note: str = ""
 
 

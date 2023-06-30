@@ -34,5 +34,8 @@ class TransactionType(Enum):
     IN_DIVIDEND = 303
     IN_AIRDROP = 304
     IN_GIFT = 305
+    IN_UNDEFINED = 399
     OUT_EXPENSE = 400
     OUT_LOSS = 401
+    OUT_UNDEFINED = 499
+    UNDEF_UNDEFINED = 999
