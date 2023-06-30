@@ -15,6 +15,7 @@ Databse
 - version of db is checked
 - first start, the database is created
 - after that the db schema types are written to the sitetype and transacttype table
+- for every table there is a dbtablename.py with function to add and read records
 
 
 Errors
