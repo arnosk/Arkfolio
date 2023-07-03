@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-06-02
+@modified: 2023-07-03
 
 Data Classes for data from database
 
@@ -33,9 +33,9 @@ class Profile:
     """Dataclass for profile"""
 
     name: str = "temp"
-    id: int = 0
     password: str = ""
     enabled: bool = True
+    id: int = 0
 
 
 @dataclass
@@ -44,20 +44,31 @@ class Wallet:
 
     site: Site
     profile: Profile
-    id: int = 0
     address: str = ""
     enabled: bool = True
+    id: int = 0
 
 
 @dataclass
 class Asset:
     """Dataclass for an asset"""
 
-    id: int
     name: str
     symbol: str
-    precision: int
-    chain: str
+    precision: int = 0
+    chain: str = ""
+    id: int = 0
+
+
+@dataclass
+class AssetOnSite:
+    """Dataclass for the identifier of an asset on a site"""
+
+    asset: Asset
+    site: Site
+    id_on_site: str
+    base: str = ""
+    id: int = 0
 
 
 @dataclass
