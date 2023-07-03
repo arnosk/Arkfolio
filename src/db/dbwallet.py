@@ -52,7 +52,7 @@ def get_wallet_ids(wallet: Wallet, db: Db):
 
 
 def get_wallet(id: int, db: Db) -> tuple:
-    query = "SELECT * FROM wallets WHERE id = ?;"
+    query = "SELECT * FROM wallets WHERE id=?;"
     result = db.query(query, (id,))
     log.debug(f"Record of wallet id {id} in database: {result}")
     if len(result) == 0:
