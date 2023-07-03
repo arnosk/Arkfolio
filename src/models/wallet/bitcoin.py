@@ -112,7 +112,7 @@ def _get_transactins_blockchaininfo(
                 print(f"{tx_i}: {txn}")
 
             finished = tx_i >= n_tx or tx_time <= int(last_time)
-            log.debug(f"Limiting requests to 1 query per {backoff} seconds")
+            log.info(f"Limiting requests to 1 query per {backoff} seconds")
             time.sleep(backoff)
 
     return transactions
