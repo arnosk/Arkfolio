@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-06-02
+@modified: 2023-07-04
 
 Database Handler Class
 
@@ -21,9 +21,16 @@ def insert_wallet(wallet: Wallet, db: Db) -> None:
         raise DbError(
             f"Not allowed to create new wallet with same address and site {wallet}"
         )
-        return
-    query = "INSERT OR IGNORE INTO wallets (site_id, profile_id, address, enabled) VALUES (?,?,?,?);"
-    queryargs = (wallet.site.id, wallet.profile.id, wallet.address, wallet.enabled)
+    query = """INSERT OR IGNORE INTO wallet 
+                (site_id, profile_id, address, enabled, haschild) 
+            VALUES (?,?,?,?,?);"""
+    queryargs = (
+        wallet.site.id,
+        wallet.profile.id,
+        wallet.address,
+        wallet.enabled,
+        wallet.haschild,
+    )
     db.execute(query, queryargs)
     db.commit()
 
@@ -45,14 +52,14 @@ def get_wallet_id(wallet: Wallet, db: Db) -> int:
 
 def get_wallet_ids(wallet: Wallet, db: Db):
     # Get all id's regarding of profile!
-    query = "SELECT id FROM wallets WHERE site_id=? AND address=?;"
+    query = "SELECT id FROM wallet WHERE site_id=? AND address=?;"
     queryargs = (wallet.site.id, wallet.address)
     result = db.query(query, queryargs)
     return result
 
 
 def get_wallet(id: int, db: Db) -> tuple:
-    query = "SELECT * FROM wallets WHERE id=?;"
+    query = "SELECT * FROM wallet WHERE id=?;"
     result = db.query(query, (id,))
     log.debug(f"Record of wallet id {id} in database: {result}")
     if len(result) == 0:
@@ -61,7 +68,7 @@ def get_wallet(id: int, db: Db) -> tuple:
 
 
 def get_all_wallets(db: Db) -> list:
-    query = "SELECT * FROM wallets"
+    query = "SELECT * FROM wallet"
     result = db.query(query)
     log.debug(f"Record of wallets in database: {result}")
     if len(result) == 0:
@@ -70,7 +77,7 @@ def get_all_wallets(db: Db) -> list:
 
 
 def update_wallet(wallet: Wallet, db: Db) -> None:
-    query = "UPDATE wallets SET address=?, enabled=? WHERE id=?;"
+    query = "UPDATE wallet SET address=?, enabled=? WHERE id=?;"
     queryargs = (wallet.address, wallet.enabled, wallet.id)
     db.execute(query, queryargs)
     db.commit()

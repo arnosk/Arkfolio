@@ -1,12 +1,12 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-07-03
+@modified: 2023-07-04
 
 Data Classes for data from database
 
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
@@ -46,6 +46,16 @@ class Wallet:
     profile: Profile
     address: str = ""
     enabled: bool = True
+    haschild: bool = False
+    id: int = 0
+
+
+@dataclass
+class WalletChild:
+    """Dataclass for wallet child"""
+
+    parent: Wallet
+    address: str = ""
     id: int = 0
 
 
@@ -75,7 +85,6 @@ class AssetOnSite:
 class Transaction:
     """Dataclass for transactions"""
 
-    id: int
     profile: Profile
     timestamp: Timestamp
     transactiontype: TransactionType
@@ -88,7 +97,10 @@ class Transaction:
     quote_asset: Asset
     base_asset: Asset
     fee_asset: Asset
+    from_walletchild: Optional[WalletChild] = None
+    to_walletchild: Optional[WalletChild] = None
     note: str = ""
+    id: int = 0
 
 
 @dataclass

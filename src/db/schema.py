@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-15
-@modified: 2023-06-02
+@modified: 2023-07-04
 
 Database Schema to create tables
 
@@ -72,37 +72,47 @@ CREATE TABLE IF NOT EXISTS assetonsite (
 );
 """
 
-DB_CREATE_SCRAPING_PRICES = f"""
-CREATE TABLE IF NOT EXISTS scrapingprices (
+DB_CREATE_SCRAPING_PRICE = f"""
+CREATE TABLE IF NOT EXISTS scrapingprice (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     asset_id INTEGER NOT NULL,
     site_id INTEGER NOT NULL,
     scrape_timestamp_start INTEGER NOT NULL,
     scrape_timestamp_end INTEGER NOT NULL,
-    CONSTRAINT FK_scrapingprices_asset FOREIGN KEY (asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_scrapingprices_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_scrapingprice_asset FOREIGN KEY (asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_scrapingprice_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 
-DB_CREATE_SCRAPING_TXS = f"""
-CREATE TABLE IF NOT EXISTS scrapingtxs (
+DB_CREATE_SCRAPING_TXN = f"""
+CREATE TABLE IF NOT EXISTS scrapingtxn (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     site_id INTEGER NOT NULL,
     scrape_timestamp_start INTEGER NOT NULL,
     scrape_timestamp_end INTEGER NOT NULL,
-    CONSTRAINT FK_scrapingtxs_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_scrapingtxn_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 
-DB_CREATE_WALLETS = f"""
-CREATE TABLE IF NOT EXISTS wallets (
+DB_CREATE_WALLET = f"""
+CREATE TABLE IF NOT EXISTS wallet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     site_id INTEGER,
     profile_id INTEGER,
     address VARCHAR(80),
     enabled BOOLEAN,
-    CONSTRAINT FK_wallets_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_wallets_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
+    haschild BOOLEAN,
+    CONSTRAINT FK_wallet_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_wallet_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+"""
+
+DB_CREATE_WALLET_CHILD = f"""
+CREATE TABLE IF NOT EXISTS walletchild (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    parent_id INTEGER NOT NULL,
+    address VARCHAR(80),
+    CONSTRAINT FK_wallet_parent FOREIGN KEY (parent_id) REFERENCES wallet(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 
@@ -114,7 +124,7 @@ CREATE TABLE IF NOT EXISTS transactiontype (
 );
 """
 
-DB_CREATE_TRANSACTIONS = f"""
+DB_CREATE_TRANSACTION = f"""
 CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER,
@@ -122,7 +132,9 @@ CREATE TABLE IF NOT EXISTS transactions (
     transactiontype_id INTEGER NOT NULL,
     site_id INTEGER,
     from_wallet_id INTEGER,
+    from_walletchild_id INTEGER,
     to_wallet_id INTEGER,
+    to_walletchild_id INTEGER,
     quote_asset_id INTEGER NOT NULL,
     base_asset_id INTEGER NOT NULL,
     fee_asset_id INTEGER,
@@ -130,14 +142,16 @@ CREATE TABLE IF NOT EXISTS transactions (
     fee INTEGER,
     txid VARCHAR(80),
     note VARCHAR(80),
-    CONSTRAINT FK_transactions_type FOREIGN KEY (transactiontype_id) REFERENCES transactiontype(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT FK_transactions_quoteasset FOREIGN KEY (quote_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_baseasset FOREIGN KEY (base_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_feeasset FOREIGN KEY (fee_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_from FOREIGN KEY (from_wallet_id) REFERENCES wallets(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_to FOREIGN KEY (to_wallet_id) REFERENCES wallets(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_transactions_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_transaction_type FOREIGN KEY (transactiontype_id) REFERENCES transactiontype(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_transaction_quoteasset FOREIGN KEY (quote_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_baseasset FOREIGN KEY (base_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_feeasset FOREIGN KEY (fee_asset_id) REFERENCES asset(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_from FOREIGN KEY (from_wallet_id) REFERENCES wallet(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_fromchild FOREIGN KEY (from_walletchild_id) REFERENCES walletchild(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_to FOREIGN KEY (to_wallet_id) REFERENCES wallet(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_tochild FOREIGN KEY (to_walletchild_id) REFERENCES walletchild(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_transaction_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 
@@ -166,11 +180,12 @@ BEGIN TRANSACTION;
 {DB_CREATE_SITE}
 {DB_CREATE_ASSET}
 {DB_CREATE_ASSET_ON_SITE}
-{DB_CREATE_SCRAPING_PRICES}
-{DB_CREATE_SCRAPING_TXS}
-{DB_CREATE_WALLETS}
+{DB_CREATE_SCRAPING_PRICE}
+{DB_CREATE_SCRAPING_TXN}
+{DB_CREATE_WALLET}
+{DB_CREATE_WALLET_CHILD}
 {DB_CREATE_TRANSACTION_TYPE}
-{DB_CREATE_TRANSACTIONS}
+{DB_CREATE_TRANSACTION}
 {DB_CREATE_PRICE_HIST}
 COMMIT;
 PRAGMA foreign_keys=on;
