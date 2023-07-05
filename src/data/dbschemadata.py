@@ -42,10 +42,12 @@ class Profile:
 class Wallet:
     """Dataclass for wallet"""
 
-    site: Site
     profile: Profile
+    site: Optional[Site] = field(default=None)
+    name: str = ""
     address: str = ""
     enabled: bool = True
+    owned: bool = True
     haschild: bool = False
     id: int = 0
 
@@ -55,6 +57,7 @@ class WalletChild:
     """Dataclass for wallet child"""
 
     parent: Wallet
+    used: bool
     address: str = ""
     id: int = 0
 
@@ -97,8 +100,8 @@ class Transaction:
     quote_asset: Asset
     base_asset: Asset
     fee_asset: Asset
-    from_walletchild: Optional[WalletChild] = None
-    to_walletchild: Optional[WalletChild] = None
+    from_walletchild: Optional[WalletChild] = field(default=None)
+    to_walletchild: Optional[WalletChild] = field(default=None)
     note: str = ""
     id: int = 0
 

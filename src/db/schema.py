@@ -99,9 +99,11 @@ CREATE TABLE IF NOT EXISTS wallet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     site_id INTEGER,
     profile_id INTEGER,
+    name VARCHAR(40),
     address VARCHAR(80),
-    enabled BOOLEAN,
-    haschild BOOLEAN,
+    owned BOOLEAN DEFAULT true,
+    enabled BOOLEAN DEFAULT true,
+    haschild BOOLEAN DEFAULT false,
     CONSTRAINT FK_wallet_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT FK_wallet_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
@@ -111,7 +113,8 @@ DB_CREATE_WALLET_CHILD = f"""
 CREATE TABLE IF NOT EXISTS walletchild (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     parent_id INTEGER NOT NULL,
-    address VARCHAR(80),
+    address VARCHAR(80) NOT NULL,
+    used BOOLEAN NOT NULL,
     CONSTRAINT FK_wallet_parent FOREIGN KEY (parent_id) REFERENCES wallet(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """

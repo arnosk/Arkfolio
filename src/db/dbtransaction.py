@@ -34,9 +34,9 @@ def insert_transaction(txn: Transaction, db: Db) -> None:
         int(txn.timestamp),
         txn.txid,
         txn.from_wallet.id,
-        txn.from_walletchild.id,
+        None if txn.from_walletchild == None else txn.from_walletchild.id,
         txn.to_wallet.id,
-        txn.to_walletchild.id,
+        None if txn.to_walletchild == None else txn.to_walletchild.id,
         txn.quote_asset.id,
         txn.base_asset.id,
         txn.fee_asset.id,
@@ -56,14 +56,10 @@ def insert_transaction_raw(
         raise DbError(f"Not allowed to create new transaction with same hash {txn}")
 
     quoteassetid = get_asset_id(txn.quote_asset, db, chain)
-    if txn.base_asset == "":
-        baseassetid = None
-    else:
-        baseassetid = get_asset_id(txn.base_asset, db, chain)
-    if txn.fee_asset == "":
-        feeassetid = None
-    else:
-        feeassetid = get_asset_id(txn.fee_asset, db, chain)
+    baseassetid = (
+        None if txn.base_asset == "" else get_asset_id(txn.base_asset, db, chain)
+    )
+    feeassetid = None if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
 
     query = """INSERT OR IGNORE INTO transactions 
                     (profile_id, site_id, transactiontype_id, timestamp, txid, 
@@ -91,12 +87,6 @@ def insert_transaction_raw(
     )
     db.execute(query, queryargs)
     db.commit()
-
-    from_wallet: str
-    to_wallet: str
-    quote_asset: str = ""
-    base_asset: str = ""
-    fee_asset: str = ""
 
 
 def check_transaction_exists(txid: str, db: Db) -> bool:

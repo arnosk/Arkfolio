@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-07-04
+@modified: 2023-07-05
 
 Database Handler Class
 
@@ -54,7 +54,7 @@ def get_asset_ids(name: str, db: Db, chain: str = ""):
 
 
 def get_asset(id: int, db: Db) -> Asset:
-    query = "SELECT * FROM asset WHERE id=?;"
+    query = "SELECT id, name, symbol, precision, chain FROM asset WHERE id=?;"
     queryargs = (id,)
     result = db.query(query, queryargs)
     log.debug(f"Record of asset id {id} in database: {result}")

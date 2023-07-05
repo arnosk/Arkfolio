@@ -37,7 +37,7 @@ def get_profile_ids(name: str, db: Db):
 
 
 def get_profile(name: str, db: Db) -> Profile:
-    query = "SELECT * FROM profile WHERE name=?;"
+    query = "SELECT id, name, password, enabled FROM profile WHERE name=?;"
     result = db.query(query, (name,))
     log.debug(f"Record of wallet name {name} in database: {result}")
     if len(result) == 0:

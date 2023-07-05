@@ -16,7 +16,9 @@ log = logging.getLogger(__name__)
 
 
 def insert_sitemodel(site: Site, db: Db) -> None:
-    query = "INSERT OR IGNORE INTO site (id, name, sitetype_id, api, secret, hasprice, enabled) VALUES (?,?,?,?,?,?,?);"
+    query = """INSERT OR IGNORE INTO site 
+            (id, name, sitetype_id, api, secret, hasprice, enabled) 
+            VALUES (?,?,?,?,?,?,?);"""
     queryargs = (
         site.id,
         site.name,
@@ -31,7 +33,8 @@ def insert_sitemodel(site: Site, db: Db) -> None:
 
 
 def get_sitemodel(id: int, db: Db) -> tuple:
-    query = "SELECT * FROM site WHERE id = ?;"
+    query = """SELECT id, name, sitetype_id, api, secret, hasprice, enabled 
+            FROM site WHERE id = ?;"""
     result = db.query(query, (id,))
     log.debug(f"Record of sitemodel id {id} in database: {result}")
     if len(result) == 0:

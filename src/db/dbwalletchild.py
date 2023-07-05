@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-07-04
+@modified: 2023-07-05
 
 Database Handler Class
 
@@ -22,11 +22,12 @@ def insert_walletchild(walletchild: WalletChild, db: Db) -> None:
             f"Not allowed to create new child wallet with same address {walletchild}"
         )
     query = """INSERT OR IGNORE INTO walletchild 
-                (parent_id, address) 
-            VALUES (?,?);"""
+                (parent_id, address, used) 
+            VALUES (?,?,?);"""
     queryargs = (
         walletchild.parent.id,
         walletchild.address,
+        walletchild.used,
     )
     db.execute(query, queryargs)
     db.commit()
@@ -49,7 +50,7 @@ def get_wallet_ids(address: str, db: Db):
 
 
 def get_walletchild(id: int, db: Db):
-    query = "SELECT * FROM walletchild WHERE id=?;"
+    query = "SELECT id, parent_id, address, used FROM walletchild WHERE id=?;"
     result = db.query(query, (id,))
     log.debug(f"Record of walletchild id {id} in database: {result}")
     if len(result) == 0:
@@ -58,7 +59,7 @@ def get_walletchild(id: int, db: Db):
 
 
 def get_walletchilds(parentid: int, db: Db) -> list:
-    query = "SELECT * FROM walletchild WHERE parentid=?;"
+    query = "SELECT id, parent_id, address, used FROM walletchild WHERE parent_id=?;"
     result = db.query(query, (parentid,))
     log.debug(f"Record of walletchild in database: {result}")
     if len(result) == 0:
