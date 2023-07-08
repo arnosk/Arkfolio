@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-07-05
+@modified: 2023-07-08
 
 Database Handler Class
 
@@ -35,15 +35,14 @@ def insert_walletchild(walletchild: WalletChild, db: Db) -> None:
 
 def check_walletchild_exists(walletchild: WalletChild, db: Db) -> bool:
     """Checks if address is unique"""
-    result = get_wallet_ids(walletchild.address, db)
+    result = get_walletchild_ids(walletchild.address, db)
     if len(result) == 0:
         return False
     return True
 
 
-def get_wallet_ids(address: str, db: Db):
-    # Get all id's regarding of profile!
-    query = "SELECT id FROM walletchild WHERE address=?;"
+def get_walletchild_ids(address: str, db: Db):
+    query = "SELECT id, parent_id, address, used FROM walletchild WHERE address=?;"
     queryargs = (address,)
     result = db.query(query, queryargs)
     return result

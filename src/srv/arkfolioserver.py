@@ -39,9 +39,9 @@ class ArkfolioServer:
         log.debug(f"Found wallets: {sites_wallets}")
 
         for siteid, wallets in sites_wallets.items():
-            addresses: list[str] = []
+            addresses: dict[int, list[str]] = {}  # int is for profileid
             for wallet in wallets:
-                addresses.append(wallet.address)
+                addresses.setdefault(wallet.profile.id, []).append(wallet.address)
             log.debug(
                 f"Found addresses for {self.sitemodels[siteid].site.name} "
                 f"are {addresses}"

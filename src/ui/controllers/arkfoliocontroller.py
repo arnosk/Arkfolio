@@ -60,7 +60,8 @@ class ArkfolioController:
         wallet_exists = check_wallet_exists(wallet, self.db)
         if wallet_exists:
             log.info(
-                f"Wallet already exists with same site/chain and address: {wallet.site.name}, {wallet.address}"
+                f"""Wallet already exists with same site/chain and address: 
+                {'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"""
             )
             return
         insert_wallet(wallet, self.db)

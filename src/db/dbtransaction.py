@@ -8,9 +8,8 @@ Database Handler Class
 """
 import logging
 
-from src.data.dbschemadata import Transaction, TransactionRaw
+from src.data.dbschemadata import Transaction
 from src.db.db import Db
-from src.db.dbasset import get_asset_id
 from src.errors.dberrors import DbError
 
 log = logging.getLogger(__name__)
@@ -42,47 +41,6 @@ def insert_transaction(txn: Transaction, db: Db) -> None:
         txn.fee_asset.id,
         txn.quantity.amount_cents,
         txn.fee.amount_cents,
-        txn.note,
-    )
-    db.execute(query, queryargs)
-    db.commit()
-
-
-def insert_transaction_raw(
-    txn: TransactionRaw, profileid: int, siteid: int, db: Db, chain: str = ""
-) -> None:
-    txn_exists = check_transaction_exists(txn.txid, db)
-    if txn_exists:
-        raise DbError(f"Not allowed to create new transaction with same hash {txn}")
-
-    quoteassetid = get_asset_id(txn.quote_asset, db, chain)
-    baseassetid = (
-        None if txn.base_asset == "" else get_asset_id(txn.base_asset, db, chain)
-    )
-    feeassetid = None if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
-
-    query = """INSERT OR IGNORE INTO transactions 
-                    (profile_id, site_id, transactiontype_id, timestamp, txid, 
-                     from_wallet_id, from_walletchild_id, 
-                     to_wallet_id, to_walletchild_id,
-                     quote_asset_id, base_asset_id, fee_asset_id,
-                     quantity, fee, note) 
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"""
-    queryargs = (
-        profileid,
-        siteid,
-        txn.transactiontype.value,
-        txn.timestamp,
-        txn.txid,
-        fromwalletid,
-        fromwalletchildid,
-        towalletid,
-        towalletchildid,
-        quoteassetid,
-        baseassetid,
-        feeassetid,
-        txn.quantity,
-        txn.fee,
         txn.note,
     )
     db.execute(query, queryargs)

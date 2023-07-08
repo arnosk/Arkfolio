@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-07-05
+@modified: 2023-07-08
 
 Database Handler Class
 
@@ -22,13 +22,14 @@ def insert_wallet(wallet: Wallet, db: Db) -> None:
             f"Not allowed to create new wallet with same address and site {wallet}"
         )
     query = """INSERT OR IGNORE INTO wallet 
-                (site_id, profile_id, name, address, enabled, haschild) 
-            VALUES (?,?,?,?,?);"""
+                (site_id, profile_id, name, address, owned, enabled, haschild) 
+            VALUES (?,?,?,?,?,?);"""
     queryargs = (
         None if wallet.site == None else wallet.site.id,
         wallet.profile.id,
         wallet.name,
         wallet.address,
+        wallet.owned,
         wallet.enabled,
         wallet.haschild,
     )

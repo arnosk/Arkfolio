@@ -38,7 +38,7 @@ class SiteModel(ABC):
         self.site.enabled = site[6]
         log.debug(f"Init of sitemodel ready {self.site}")
 
-    def get_transactions(self, addresses: list[str]) -> list[Transaction]:
+    def get_transactions(self, addresses: dict[int, list[str]]) -> list[Transaction]:
         raise NotImplementedError(
             f"Site model {self.__class__.__name__} doesn't have transactions"
         )
