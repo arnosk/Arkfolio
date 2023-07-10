@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-07-04
+@modified: 2023-07-10
 
 Data Classes for data from database
 
@@ -68,7 +68,7 @@ class Asset:
 
     name: str
     symbol: str
-    precision: int = 0
+    decimal_places: int = 0
     chain: str = ""
     id: int = 0
 

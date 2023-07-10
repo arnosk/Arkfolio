@@ -1,20 +1,20 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-05-29
+@modified: 2023-07-10
 
-Dynamically search for SiteModel
+Sitemodel for bitcoin blockchain
 
 """
 import logging
 import time
-from re import T
 
 import config
-from src.data.dbschemadata import Site, Transaction, TransactionRaw, Wallet
+from src.data.dbschemadata import Asset, Site, TransactionRaw
 from src.data.dbschematypes import SiteType, TransactionType
 from src.data.types import Timestamp
 from src.db.db import Db
+from src.db.dbasset import insert_asset
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.req.requesthelper import request_get_dict
@@ -35,12 +35,19 @@ class Bitcoin(SiteModel):
             enabled=True,
         )
 
-    def get_transactions(self, addresses: dict[int, list[str]]) -> list[Transaction]:
+    def asset_dbinit(self, db: Db) -> None:
+        """Initialize asset bitcoin, BTC. No AssetOnSite necessary"""
+        log.debug(f"Asset initialize for {self.site.name} with database")
+        asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
+        insert_asset(asset, db)
+
+    def get_transactions(
+        self, addresses: list[str], last_time: Timestamp = Timestamp(0)
+    ) -> list[TransactionRaw]:
         log.debug(f"Start getting transactions for {self.site.name}")
-        for profileid, addresslist in addresses.items():
-            x = _get_transactins_blockchaininfo(addresslist, Timestamp(1682081512))
-            log.debug(f"Result: {x}")
-        return []
+        result = _get_transactins_blockchaininfo(addresses, last_time)
+        log.debug(f"Result: {result}")
+        return result
 
 
 def _get_transactins_blockchaininfo(

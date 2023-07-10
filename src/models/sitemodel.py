@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-05-29
+@modified: 2023-07-10
 
 Abstract class for all sites
 
@@ -12,9 +12,11 @@ The settings can be changed by user in Database, but must be initialized
 import logging
 from abc import ABC, abstractmethod
 
-from src.data.dbschemadata import Price, Site, Transaction
+from src.data.dbschemadata import Price, Site, TransactionRaw
+from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
+from src.srv.serverhelper2 import insert_transaction_raw
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +40,22 @@ class SiteModel(ABC):
         self.site.enabled = site[6]
         log.debug(f"Init of sitemodel ready {self.site}")
 
-    def get_transactions(self, addresses: dict[int, list[str]]) -> list[Transaction]:
+    def asset_dbinit(self, db: Db) -> None:
+        """Initialization the assets used by this site model in database"""
+        log.debug(f"No Asset initialize for {self.site.name} with database")
+
+    def search_transactions(self, addresses: dict[int, list[str]], db: Db) -> None:
+        log.debug(f"Start getting transactions for {self.site.name}")
+        for profileid, addresslist in addresses.items():
+            x = self.get_transactions(addresslist, Timestamp(1682081512))
+            log.debug(f"Result: {x}")
+            for tx in x:
+                insert_transaction_raw(tx, profileid, self.site.id, db)
+        return
+
+    def get_transactions(
+        self, addresses: list[str], last_time: Timestamp = Timestamp(0)
+    ) -> list[TransactionRaw]:
         raise NotImplementedError(
             f"Site model {self.__class__.__name__} doesn't have transactions"
         )
@@ -54,3 +71,7 @@ class SiteModel(ABC):
         self.site.api = api
         self.site.secret = secret
         update_sitemodel(self.site, db)
+
+    def convert_asset_to_own(self, assetname: str) -> str:
+        """Converting assetname on site to the assetname used in this program"""
+        return assetname

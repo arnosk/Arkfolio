@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-15
-@modified: 2023-07-04
+@modified: 2023-07-10
 
 Database Schema to create tables
 
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS asset (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(40) NOT NULL,
     symbol VARCHAR(16) NOT NULL,
-    precision INTEGER NOT NULL,
+    decimal_places INTEGER NOT NULL,
     chain VARCHAR(40)
 );
 """
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     to_wallet_id INTEGER,
     to_walletchild_id INTEGER,
     quote_asset_id INTEGER NOT NULL,
-    base_asset_id INTEGER NOT NULL,
+    base_asset_id INTEGER,
     fee_asset_id INTEGER,
     quantity INTEGER,
     fee INTEGER,

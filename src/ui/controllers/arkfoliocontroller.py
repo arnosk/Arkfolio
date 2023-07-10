@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-06-02
+@modified: 2023-07-10
 
 Controller for ArkFolio
 
@@ -9,7 +9,6 @@ Controller for ArkFolio
 import logging
 from typing import Protocol
 
-import config
 from src.data.dbschemadata import Profile, Wallet
 from src.db.db import Db
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile

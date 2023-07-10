@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-06-03
+@modified: 2023-07-10
 
 Server for ArkFolio
 
@@ -28,6 +28,7 @@ class ArkfolioServer:
         for sitemodel in self.sitemodels.values():
             log.debug(f"Sitemodel: {sitemodel}")
             sitemodel.model_dbinit(self.db)
+            sitemodel.asset_dbinit(self.db)
 
     def run(self):
         log.debug("Starting Arkfolio server")
@@ -46,7 +47,7 @@ class ArkfolioServer:
                 f"Found addresses for {self.sitemodels[siteid].site.name} "
                 f"are {addresses}"
             )
-            self.sitemodels[siteid].get_transactions(addresses)
+            self.sitemodels[siteid].search_transactions(addresses, self.db)
 
         # For blockchain wallet: do this per wallet address or per chain api
         # with use of asyncio, ccxt
