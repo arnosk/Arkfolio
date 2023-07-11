@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-10
+@modified: 2023-07-11
 
 Abstract class for all sites
 
@@ -50,7 +50,7 @@ class SiteModel(ABC):
             txns = self.get_transactions(addresslist, Timestamp(1682081512))
             log.debug(f"New found transactions: {len(txns)}")
             for txn in txns:
-                insert_transaction_raw(txn, profileid, self.site.id, db)
+                insert_transaction_raw(txn, profileid, self.site, db)
         return
 
     def get_transactions(

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-07-10
+@modified: 2023-07-11
 
 Database Handler Class
 
@@ -23,6 +23,8 @@ def insert_asset(asset: Asset, db: Db) -> None:
         )
     asset_exists = check_asset_exists(asset, db)
     if asset_exists:
+        # TODO: raise error?
+        log.error(f"Skipping insert, Asset already exists in db {asset}")
         return
     query = "INSERT INTO asset (name, symbol, decimal_places, chain) VALUES (?,?,?,?);"
     queryargs = (asset.name, asset.symbol, asset.decimal_places, asset.chain)
@@ -48,7 +50,7 @@ def check_asset_exists(asset: Asset, db: Db) -> bool:
     return True
 
 
-def get_asset_id(name: str, db: Db, chain: str = ""):
+def get_asset_id(name: str, db: Db, chain: str = "") -> int:
     result = get_asset_ids(name, db, chain)
     if len(result) == 0:
         raise DbError(f"No asset found {name} on chain {chain}")
