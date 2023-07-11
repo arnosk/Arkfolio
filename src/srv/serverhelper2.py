@@ -136,7 +136,11 @@ def insert_transaction_raw(
     txn_exists = check_transaction_exists(txn.txid, db)
     if txn_exists:
         # TODO: what if other profile has same transaction...
-        raise DbError(f"Not allowed to create new transaction with same hash {txn}")
+        log.exception(f"Transaction already excist with same hash {txn.txid}")
+        return
+        raise DbError(
+            f"Not allowed to create new transaction with same hash {txn.txid}"
+        )
 
     fromwalletid = 0
     fromwalletchildid = 0
@@ -162,11 +166,9 @@ def insert_transaction_raw(
 
     quoteassetid = get_asset_id(txn.quote_asset, db, chain)
     baseassetid = (
-        "NULL" if txn.base_asset == "" else get_asset_id(txn.base_asset, db, chain)
+        None if txn.base_asset == "" else get_asset_id(txn.base_asset, db, chain)
     )
-    feeassetid = (
-        "NULL" if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
-    )
+    feeassetid = None if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
 
     query = """INSERT OR IGNORE INTO transactions 
                     (profile_id, site_id, transactiontype_id, timestamp, txid, 
@@ -182,9 +184,9 @@ def insert_transaction_raw(
         txn.timestamp,
         txn.txid,
         fromwalletid,
-        "NULL" if fromwalletchildid == 0 else fromwalletchildid,
+        None if fromwalletchildid == 0 else fromwalletchildid,
         towalletid,
-        "NULL" if towalletchildid == 0 else towalletchildid,
+        None if towalletchildid == 0 else towalletchildid,
         quoteassetid,
         baseassetid,
         feeassetid,

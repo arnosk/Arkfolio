@@ -46,7 +46,6 @@ class Bitcoin(SiteModel):
     ) -> list[TransactionRaw]:
         log.debug(f"Start getting transactions for {self.site.name}")
         result = _get_transactins_blockchaininfo(addresses, last_time)
-        log.debug(f"Result: {result}")
         return result
 
 
@@ -74,10 +73,13 @@ def _get_transactins_blockchaininfo(
 
             n_tx = resp["n_tx"]
             balance = resp["final_balance"]
-            print(f"Address {acc} has {n_tx} txs, balance = {balance}")
-            for tx in resp["txs"]:
+            txs = resp["txs"]
+            log.debug(f"Address {acc} has {n_tx} all time txns, balance = {balance}")
+            log.debug(
+                f"Retrieving {len(txs)} txns from offset {offset} and time {last_time} ({convert_timestamp(last_time)})"
+            )
+            for tx in txs:
                 tx_i = tx_i + 1
-                # print(f"TX {tx_i}: {tx}")
                 tx_type = TransactionType.UNDEF_UNDEFINED
                 tx_fee = 0
                 tx_value = 0
@@ -117,7 +119,7 @@ def _get_transactins_blockchaininfo(
                 )
                 transactions.append(txn)
                 timestr = convert_timestamp(tx_time)
-                print(f"{tx_i}: {txn}")
+                log.debug(f"{tx_i}: {tx_time} ({timestr}) - {txn.txid}")
 
             finished = tx_i >= n_tx or tx_time <= int(last_time)
             log.info(f"Limiting requests to 1 query per {backoff} seconds")

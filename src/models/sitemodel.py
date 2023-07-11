@@ -45,12 +45,12 @@ class SiteModel(ABC):
         log.debug(f"No Asset initialize for {self.site.name} with database")
 
     def search_transactions(self, addresses: dict[int, list[str]], db: Db) -> None:
-        log.debug(f"Start getting transactions for {self.site.name}")
+        log.debug(f"Start searching transactions for {self.site.name}")
         for profileid, addresslist in addresses.items():
-            x = self.get_transactions(addresslist, Timestamp(1682081512))
-            log.debug(f"Result: {x}")
-            for tx in x:
-                insert_transaction_raw(tx, profileid, self.site.id, db)
+            txns = self.get_transactions(addresslist, Timestamp(1682081512))
+            log.debug(f"New found transactions: {len(txns)}")
+            for txn in txns:
+                insert_transaction_raw(txn, profileid, self.site.id, db)
         return
 
     def get_transactions(
