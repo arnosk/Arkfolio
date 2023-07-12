@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-11
+@modified: 2023-07-12
 
 Abstract class for all sites
 
@@ -15,8 +15,9 @@ from abc import ABC, abstractmethod
 from src.data.dbschemadata import Price, Site, TransactionRaw
 from src.data.types import Timestamp
 from src.db.db import Db
+from src.db.dbscrapingtxn import update_scrapingtxn_raw
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.srv.serverhelper2 import insert_transaction_raw
+from src.srv.serverhelper2 import get_scraping_timestamp_end, insert_transaction_raw
 
 log = logging.getLogger(__name__)
 
@@ -47,10 +48,13 @@ class SiteModel(ABC):
     def search_transactions(self, addresses: dict[int, list[str]], db: Db) -> None:
         log.debug(f"Start searching transactions for {self.site.name}")
         for profileid, addresslist in addresses.items():
-            txns = self.get_transactions(addresslist, Timestamp(1682081512))
+            last_time = get_scraping_timestamp_end(profileid, self.site, db)
+            txns = self.get_transactions(addresslist, last_time)
             log.debug(f"New found transactions: {len(txns)}")
             for txn in txns:
-                insert_transaction_raw(txn, profileid, self.site, db)
+                result_ok = insert_transaction_raw(txn, profileid, self.site, db)
+                if result_ok:
+                    update_scrapingtxn_raw(txn.timestamp, profileid, self.site.id, db)
         return
 
     def get_transactions(

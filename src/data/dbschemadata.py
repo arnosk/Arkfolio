@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-07-10
+@modified: 2023-07-12
 
 Data Classes for data from database
 
@@ -132,3 +132,13 @@ class Price:
     quote_asset: Asset
     base_asset: Asset
     site: Site
+
+
+@dataclass
+class ScrapingTxn:
+    """Dataclass for scraping datetimes for transactions"""
+
+    site: Site
+    scrape_timestamp_start: Timestamp
+    scrape_timestamp_end: Timestamp
+    id: int = 0

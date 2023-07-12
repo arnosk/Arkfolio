@@ -88,9 +88,11 @@ DB_CREATE_SCRAPING_TXN = f"""
 CREATE TABLE IF NOT EXISTS scrapingtxn (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     site_id INTEGER NOT NULL,
+    profile_id INTEGER,
     scrape_timestamp_start INTEGER NOT NULL,
     scrape_timestamp_end INTEGER NOT NULL,
     CONSTRAINT FK_scrapingtxn_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_scrapingtxn_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 

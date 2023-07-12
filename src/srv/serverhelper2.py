@@ -8,10 +8,15 @@ Helper functions for Server
 """
 import logging
 
-from src.data.dbschemadata import Site, TransactionRaw
+from src.data.dbschemadata import ScrapingTxn, Site, TransactionRaw
 from src.data.dbschematypes import TransactionType
+from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbasset import get_asset_id
+from src.db.dbscrapingtxn import (
+    get_scrapingtxn_timestamp_end,
+    insert_ignore_scrapingtxn,
+)
 from src.db.dbtransaction import check_transaction_exists
 from src.errors.dberrors import DbError
 
@@ -137,7 +142,14 @@ def get_wallet_raw(
 
 def insert_transaction_raw(
     txn: TransactionRaw, profileid: int, site: Site, db: Db, chain: str = ""
-) -> None:
+) -> bool:
+    """Processing the raw transaction before inserting into db
+
+    wallet addresses are looked up in database for existance
+    asset symbols/names are looked up in database for existance
+
+    Returns true when transaction is added to database
+    """
     log.debug(
         f"Trying to insert a raw txn for profileid {profileid} and site {site.name} and chain {chain}: {txn}"
     )
@@ -145,7 +157,7 @@ def insert_transaction_raw(
     if txn_exists:
         # TODO: what if other profile has same transaction..., raise error?
         log.exception(f"Transaction already exist with same hash {txn.txid}")
-        return
+        return False
         raise DbError(
             f"Not allowed to create new transaction with same hash {txn.txid}"
         )
@@ -200,5 +212,16 @@ def insert_transaction_raw(
         txn.fee,
         txn.note,
     )
-    db.execute(query, queryargs)
+    result = db.execute(query, queryargs)
     db.commit()
+    return result > 0
+
+
+def get_scraping_timestamp_end(profileid: int, site: Site, db: Db) -> Timestamp:
+    scrape = ScrapingTxn(
+        site=site,
+        scrape_timestamp_start=Timestamp(0),
+        scrape_timestamp_end=Timestamp(0),
+    )
+    insert_ignore_scrapingtxn(scrape, profileid, db)
+    return get_scrapingtxn_timestamp_end(scrape, profileid, db)

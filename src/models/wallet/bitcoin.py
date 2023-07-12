@@ -45,11 +45,11 @@ class Bitcoin(SiteModel):
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)
     ) -> list[TransactionRaw]:
         log.debug(f"Start getting transactions for {self.site.name}")
-        result = _get_transactins_blockchaininfo(addresses, last_time)
+        result = _get_transactions_blockchaininfo(addresses, last_time)
         return result
 
 
-def _get_transactins_blockchaininfo(
+def _get_transactions_blockchaininfo(
     accounts: list[str], last_time: Timestamp = Timestamp(0)
 ) -> list[TransactionRaw]:
     """May raise RemoteError or KeyError
