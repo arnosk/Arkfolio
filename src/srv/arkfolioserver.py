@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-07-10
+@modified: 2023-07-14
 
 Server for ArkFolio
 
@@ -40,14 +40,15 @@ class ArkfolioServer:
         log.debug(f"Found wallets: {sites_wallets}")
 
         for siteid, wallets in sites_wallets.items():
-            addresses: dict[int, list[str]] = {}  # int is for profileid
+            # addresses: dict[int, list[str]] = {}  # int is for profileid
             for wallet in wallets:
-                addresses.setdefault(wallet.profile.id, []).append(wallet.address)
+                # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
+                self.sitemodels[siteid].search_transactions(wallet, self.db)
+
             log.debug(
                 f"Found addresses for {self.sitemodels[siteid].site.name} "
-                f"are {addresses}"
+                # f"are {addresses}"
             )
-            self.sitemodels[siteid].search_transactions(addresses, self.db)
 
         # For blockchain wallet: do this per wallet address or per chain api
         # with use of asyncio, ccxt

@@ -12,12 +12,16 @@ The settings can be changed by user in Database, but must be initialized
 import logging
 from abc import ABC, abstractmethod
 
-from src.data.dbschemadata import Price, Site, TransactionRaw
+from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet
 from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbscrapingtxn import update_scrapingtxn_raw
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.srv.serverhelper2 import get_scraping_timestamp_end, insert_transaction_raw
+from src.srv.serverhelper2 import (
+    get_scraping_timestamp_end,
+    get_walletchild_addresses,
+    insert_transaction_raw,
+)
 
 log = logging.getLogger(__name__)
 
@@ -45,17 +49,23 @@ class SiteModel(ABC):
         """Initialization the assets used by this site model in database"""
         log.debug(f"No Asset initialize for {self.site.name} with database")
 
-    def search_transactions(self, addresses: dict[int, list[str]], db: Db) -> None:
-        log.debug(f"Start searching transactions for {self.site.name}")
-        for profileid, addresslist in addresses.items():
-            last_time = get_scraping_timestamp_end(profileid, self.site, db)
-            txns = self.get_transactions(addresslist, last_time)
-            txns.sort()
-            log.debug(f"New found transactions: {len(txns)}")
-            for txn in txns:
-                result_ok = insert_transaction_raw(txn, profileid, self.site, db)
-                if result_ok:
-                    update_scrapingtxn_raw(txn.timestamp, profileid, self.site.id, db)
+    def search_transactions(self, wallet: Wallet, db: Db) -> None:
+        log.debug(
+            f"Start searching transactions for {wallet.address} on {self.site.name}"
+        )
+        if wallet.haschild:
+            addresses = get_walletchild_addresses(wallet.id, db)
+        else:
+            addresses = [wallet.address]
+
+        last_time = get_scraping_timestamp_end(wallet, db)
+        txns = self.get_transactions(addresses, last_time)
+        txns.sort()
+        log.debug(f"New found transactions: {len(txns)}")
+        for txn in txns:
+            result_ok = insert_transaction_raw(txn, wallet.profile.id, self.site, db)
+            if result_ok:
+                update_scrapingtxn_raw(txn.timestamp + 1, wallet.id, db)
         return
 
     def get_transactions(

@@ -138,7 +138,7 @@ class Price:
 class ScrapingTxn:
     """Dataclass for scraping datetimes for transactions"""
 
-    site: Site
+    wallet: Wallet
     scrape_timestamp_start: Timestamp
     scrape_timestamp_end: Timestamp
     id: int = 0

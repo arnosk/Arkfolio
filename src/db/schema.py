@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-15
-@modified: 2023-07-10
+@modified: 2023-07-14
 
 Database Schema to create tables
 
@@ -87,12 +87,10 @@ CREATE TABLE IF NOT EXISTS scrapingprice (
 DB_CREATE_SCRAPING_TXN = f"""
 CREATE TABLE IF NOT EXISTS scrapingtxn (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    site_id INTEGER NOT NULL,
-    profile_id INTEGER,
+    wallet_id INTEGER NOT NULL,
     scrape_timestamp_start INTEGER NOT NULL,
     scrape_timestamp_end INTEGER NOT NULL,
-    CONSTRAINT FK_scrapingtxn_site FOREIGN KEY (site_id) REFERENCES site(id) ON UPDATE CASCADE ON DELETE CASCADE
-    CONSTRAINT FK_scrapingtxn_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_scrapingtxn_wallet FOREIGN KEY (wallet_id) REFERENCES wallet(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 """
 

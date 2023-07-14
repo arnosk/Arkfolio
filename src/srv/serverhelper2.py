@@ -1,14 +1,14 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-07-11
+@modified: 2023-07-14
 
 Helper functions for Server
 
 """
 import logging
 
-from src.data.dbschemadata import ScrapingTxn, Site, TransactionRaw
+from src.data.dbschemadata import ScrapingTxn, Site, TransactionRaw, Wallet
 from src.data.dbschematypes import TransactionType
 from src.data.types import Timestamp
 from src.db.db import Db
@@ -18,6 +18,7 @@ from src.db.dbscrapingtxn import (
     insert_ignore_scrapingtxn,
 )
 from src.db.dbtransaction import check_transaction_exists
+from src.db.dbwalletchild import get_walletchilds
 from src.errors.dberrors import DbError
 
 log = logging.getLogger(__name__)
@@ -217,11 +218,19 @@ def insert_transaction_raw(
     return result > 0
 
 
-def get_scraping_timestamp_end(profileid: int, site: Site, db: Db) -> Timestamp:
+def get_scraping_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
     scrape = ScrapingTxn(
-        site=site,
+        wallet=wallet,
         scrape_timestamp_start=Timestamp(0),
         scrape_timestamp_end=Timestamp(0),
     )
-    insert_ignore_scrapingtxn(scrape, profileid, db)
-    return get_scrapingtxn_timestamp_end(scrape, profileid, db)
+    insert_ignore_scrapingtxn(scrape, db)
+    return get_scrapingtxn_timestamp_end(scrape, db)
+
+
+def get_walletchild_addresses(parentid: int, db: Db) -> list[str]:
+    result = get_walletchilds(parentid, db)
+    addresses: list[str] = []
+    for res in result:
+        addresses.append(res[2])
+    return addresses
