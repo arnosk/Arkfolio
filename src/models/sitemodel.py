@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-12
+@modified: 2023-07-14
 
 Abstract class for all sites
 
@@ -50,6 +50,7 @@ class SiteModel(ABC):
         for profileid, addresslist in addresses.items():
             last_time = get_scraping_timestamp_end(profileid, self.site, db)
             txns = self.get_transactions(addresslist, last_time)
+            txns.sort()
             log.debug(f"New found transactions: {len(txns)}")
             for txn in txns:
                 result_ok = insert_transaction_raw(txn, profileid, self.site, db)

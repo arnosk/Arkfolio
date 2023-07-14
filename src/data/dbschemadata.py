@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-07-12
+@modified: 2023-07-14
 
 Data Classes for data from database
 
@@ -106,7 +106,7 @@ class Transaction:
     id: int = 0
 
 
-@dataclass
+@dataclass(order=True)
 class TransactionRaw:
     """Dataclass for writing raw transactions to db"""
 
