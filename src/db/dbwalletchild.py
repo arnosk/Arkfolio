@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-07-08
+@modified: 2023-07-15
 
 Database Handler Class
 
@@ -64,3 +64,11 @@ def get_walletchilds(parentid: int, db: Db) -> list:
     if len(result) == 0:
         log.info(f"No records found of a wallet in database")
     return result
+
+
+def get_walletchild_addresses(parentid: int, db: Db) -> list[str]:
+    result = get_walletchilds(parentid, db)
+    addresses: list[str] = []
+    for res in result:
+        addresses.append(res[2])
+    return addresses

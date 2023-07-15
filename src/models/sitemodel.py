@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-14
+@modified: 2023-07-15
 
 Abstract class for all sites
 
@@ -17,11 +17,8 @@ from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbscrapingtxn import update_scrapingtxn_raw
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.srv.serverhelper2 import (
-    get_scraping_timestamp_end,
-    get_walletchild_addresses,
-    insert_transaction_raw,
-)
+from src.db.dbwalletchild import get_walletchild_addresses
+from src.srv.serverhelper2 import get_scraping_timestamp_end, insert_transaction_raw
 
 log = logging.getLogger(__name__)
 

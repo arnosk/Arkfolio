@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-07-14
+@modified: 2023-07-15
 
 Helper functions for Server
 
@@ -18,7 +18,6 @@ from src.db.dbscrapingtxn import (
     insert_ignore_scrapingtxn,
 )
 from src.db.dbtransaction import check_transaction_exists
-from src.db.dbwalletchild import get_walletchilds
 from src.errors.dberrors import DbError
 
 log = logging.getLogger(__name__)
@@ -231,11 +230,3 @@ def get_scraping_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
     )
     insert_ignore_scrapingtxn(scrape, db)
     return get_scrapingtxn_timestamp_end(scrape, db)
-
-
-def get_walletchild_addresses(parentid: int, db: Db) -> list[str]:
-    result = get_walletchilds(parentid, db)
-    addresses: list[str] = []
-    for res in result:
-        addresses.append(res[2])
-    return addresses
