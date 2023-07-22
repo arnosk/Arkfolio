@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-15
+@modified: 2023-07-22
 
 Abstract class for all sites
 
@@ -18,7 +18,10 @@ from src.db.db import Db
 from src.db.dbscrapingtxn import update_scrapingtxn_raw
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
 from src.db.dbwalletchild import get_walletchild_addresses
-from src.srv.serverhelper2 import get_scraping_timestamp_end, insert_transaction_raw
+from src.srv.serverhelper2 import (
+    get_scraping_timestamp_end,
+    process_and_insert_rawtransaction,
+)
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +63,9 @@ class SiteModel(ABC):
         txns.sort()
         log.debug(f"New found transactions: {len(txns)}")
         for txn in txns:
-            result_ok = insert_transaction_raw(txn, wallet.profile.id, self.site, db)
+            result_ok = process_and_insert_rawtransaction(
+                txn, wallet.profile.id, self.site, db
+            )
             if result_ok:
                 update_scrapingtxn_raw(txn.timestamp + 1, wallet.id, db)
         return

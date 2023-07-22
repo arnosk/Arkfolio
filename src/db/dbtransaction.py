@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-07-04
+@modified: 2023-07-22
 
 Database Handler Class
 
@@ -45,6 +45,53 @@ def insert_transaction(txn: Transaction, db: Db) -> None:
     )
     db.execute(query, queryargs)
     db.commit()
+
+
+def insert_transaction_raw(
+    profileid: int,
+    siteid: int,
+    transactiontype: int,
+    timestamp: int,
+    transactionid: str,
+    from_walletid: int,
+    from_walletchildid: int | None,
+    to_walletid: int,
+    to_walletchildid: int | None,
+    quote_assetid: int,
+    base_assetid: int | None,
+    fee_assetid: int | None,
+    quantity_cents: int,
+    fee_cents: int,
+    note: str,
+    db: Db,
+) -> int:
+    query = """INSERT OR IGNORE INTO transactions 
+                    (profile_id, site_id, transactiontype_id, timestamp, txid, 
+                     from_wallet_id, from_walletchild_id, 
+                     to_wallet_id, to_walletchild_id,
+                     quote_asset_id, base_asset_id, fee_asset_id,
+                     quantity, fee, note) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"""
+    queryargs = (
+        profileid,
+        siteid,
+        transactiontype,
+        timestamp,
+        transactionid,
+        from_walletid,
+        from_walletchildid,
+        to_walletid,
+        to_walletchildid,
+        quote_assetid,
+        base_assetid,
+        fee_assetid,
+        quantity_cents,
+        fee_cents,
+        note,
+    )
+    result = db.execute(query, queryargs)
+    db.commit()
+    return result
 
 
 def check_transaction_exists(txid: str, db: Db) -> bool:

@@ -17,7 +17,7 @@ from src.db.dbscrapingtxn import (
     get_scrapingtxn_timestamp_end,
     insert_ignore_scrapingtxn,
 )
-from src.db.dbtransaction import check_transaction_exists
+from src.db.dbtransaction import check_transaction_exists, insert_transaction_raw
 from src.db.dbwallet import get_wallet_id2, get_wallet_id_notowned, insert_wallet_raw
 from src.db.dbwalletchild import get_walletchild_id, insert_walletchild_raw
 from src.errors.dberrors import DbError
@@ -84,7 +84,7 @@ def get_wallet_raw_notown(
     return (wallet_parent_id, res_wchild[0][0])
 
 
-def insert_transaction_raw(
+def process_and_insert_rawtransaction(
     txn: TransactionRaw, profileid: int, site: Site, db: Db, chain: str = ""
 ) -> bool:
     """Processing the raw transaction before inserting into db
@@ -134,33 +134,53 @@ def insert_transaction_raw(
     )
     feeassetid = None if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
 
-    query = """INSERT OR IGNORE INTO transactions 
-                    (profile_id, site_id, transactiontype_id, timestamp, txid, 
-                     from_wallet_id, from_walletchild_id, 
-                     to_wallet_id, to_walletchild_id,
-                     quote_asset_id, base_asset_id, fee_asset_id,
-                     quantity, fee, note) 
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"""
-    queryargs = (
-        profileid,
-        site.id,
-        txn.transactiontype.value,
-        txn.timestamp,
-        txn.txid,
-        fromwalletid,
-        None if fromwalletchildid == 0 else fromwalletchildid,
-        towalletid,
-        None if towalletchildid == 0 else towalletchildid,
-        quoteassetid,
-        baseassetid,
-        feeassetid,
-        txn.quantity,
-        txn.fee,
-        txn.note,
+    result = insert_transaction_raw(
+        profileid=profileid,
+        siteid=site.id,
+        transactiontype=txn.transactiontype.value,
+        timestamp=txn.timestamp,
+        transactionid=txn.txid,
+        from_walletid=fromwalletid,
+        from_walletchildid=None if fromwalletchildid == 0 else fromwalletchildid,
+        to_walletid=towalletid,
+        to_walletchildid=None if towalletchildid == 0 else towalletchildid,
+        quote_assetid=quoteassetid,
+        base_assetid=baseassetid,
+        fee_assetid=feeassetid,
+        quantity_cents=txn.quantity,
+        fee_cents=txn.fee,
+        note=txn.note,
+        db=db,
     )
-    result = db.execute(query, queryargs)
-    db.commit()
     return result > 0
+
+    # query = """INSERT OR IGNORE INTO transactions
+    #                 (profile_id, site_id, transactiontype_id, timestamp, txid,
+    #                  from_wallet_id, from_walletchild_id,
+    #                  to_wallet_id, to_walletchild_id,
+    #                  quote_asset_id, base_asset_id, fee_asset_id,
+    #                  quantity, fee, note)
+    #             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"""
+    # queryargs = (
+    #     profileid,
+    #     site.id,
+    #     txn.transactiontype.value,
+    #     txn.timestamp,
+    #     txn.txid,
+    #     fromwalletid,
+    #     None if fromwalletchildid == 0 else fromwalletchildid,
+    #     towalletid,
+    #     None if towalletchildid == 0 else towalletchildid,
+    #     quoteassetid,
+    #     baseassetid,
+    #     feeassetid,
+    #     txn.quantity,
+    #     txn.fee,
+    #     txn.note,
+    # )
+    # result = db.execute(query, queryargs)
+    # db.commit()
+    # return result > 0
 
 
 def get_scraping_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
