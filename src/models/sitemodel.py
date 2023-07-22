@@ -15,13 +15,14 @@ from abc import ABC, abstractmethod
 from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet
 from src.data.types import Timestamp
 from src.db.db import Db
-from src.db.dbscrapingtxn import update_scrapingtxn_raw
+from src.db.dbscrapingtxn import (
+    get_scrapingtxn_timestamp_end,
+    insert_ignore_scrapingtxn_raw,
+    update_scrapingtxn_raw,
+)
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
 from src.db.dbwalletchild import get_walletchild_addresses
-from src.srv.serverhelper2 import (
-    get_scraping_timestamp_end,
-    process_and_insert_rawtransaction,
-)
+from src.srv.serverhelper2 import process_and_insert_rawtransaction
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +59,8 @@ class SiteModel(ABC):
         else:
             addresses = [wallet.address]
 
-        last_time = get_scraping_timestamp_end(wallet, db)
+        insert_ignore_scrapingtxn_raw(wallet.id, db)
+        last_time = get_scrapingtxn_timestamp_end(wallet, db)
         txns = self.get_transactions(addresses, last_time)
         txns.sort()
         log.debug(f"New found transactions: {len(txns)}")

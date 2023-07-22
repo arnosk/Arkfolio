@@ -8,15 +8,10 @@ Helper functions for Server
 """
 import logging
 
-from src.data.dbschemadata import ScrapingTxn, Site, TransactionRaw, Wallet
+from src.data.dbschemadata import Site, TransactionRaw
 from src.data.dbschematypes import TransactionType
-from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbasset import get_asset_id
-from src.db.dbscrapingtxn import (
-    get_scrapingtxn_timestamp_end,
-    insert_ignore_scrapingtxn,
-)
 from src.db.dbtransaction import check_transaction_exists, insert_transaction_raw
 from src.db.dbwallet import get_wallet_id2, get_wallet_id_notowned, insert_wallet_raw
 from src.db.dbwalletchild import get_walletchild_id, insert_walletchild_raw
@@ -181,13 +176,3 @@ def process_and_insert_rawtransaction(
     # result = db.execute(query, queryargs)
     # db.commit()
     # return result > 0
-
-
-def get_scraping_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
-    scrape = ScrapingTxn(
-        wallet=wallet,
-        scrape_timestamp_start=Timestamp(0),
-        scrape_timestamp_end=Timestamp(0),
-    )
-    insert_ignore_scrapingtxn(scrape, db)
-    return get_scrapingtxn_timestamp_end(scrape, db)
