@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-12
-@modified: 2023-07-14
+@modified: 2023-07-22
 
 Database Handler Class
 

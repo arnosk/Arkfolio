@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-07-15
+@modified: 2023-07-22
 
 Helper functions for Server
 
@@ -18,17 +18,11 @@ from src.db.dbscrapingtxn import (
     insert_ignore_scrapingtxn,
 )
 from src.db.dbtransaction import check_transaction_exists
+from src.db.dbwallet import get_wallet_id2, get_wallet_id_notowned, insert_wallet_raw
+from src.db.dbwalletchild import get_walletchild_id, insert_walletchild_raw
 from src.errors.dberrors import DbError
 
 log = logging.getLogger(__name__)
-
-
-def get_wallet_id2(address: str, siteid: int, profileid: int, db: Db):
-    """Get wallet from db, for specific address and site and profile"""
-    query = "SELECT id FROM wallet WHERE profile_id=? AND site_id=? AND address=?;"
-    queryargs = (profileid, siteid, address)
-    result = db.query(query, queryargs)
-    return result
 
 
 def get_walletchild_ids_join(address: str, siteid: int, profileid: int, db: Db):
@@ -39,59 +33,6 @@ def get_walletchild_ids_join(address: str, siteid: int, profileid: int, db: Db):
     queryargs = (address, siteid, profileid)
     result = db.query(query, queryargs)
     return result
-
-
-def get_wallet_id_notowned(siteid: int, profileid: int, db: Db):
-    query = "SELECT id FROM wallet WHERE owned=false AND site_id=? AND profile_id=?;"
-    queryargs = (siteid, profileid)
-    result = db.query(query, queryargs)
-    return result
-
-
-def get_walletchild_id_notowned(address: str, parentid: int, db: Db):
-    query = "SELECT id FROM walletchild WHERE parent_id=? AND address=?;"
-    queryargs = (parentid, address)
-    result = db.query(query, queryargs)
-    return result
-
-
-def insert_walletchild_raw(parentid: int, address: str, used: bool, db: Db):
-    query = """INSERT OR IGNORE INTO walletchild 
-                (parent_id, address, used) 
-            VALUES (?,?,?);"""
-    queryargs = (
-        parentid,
-        address,
-        used,
-    )
-    db.execute(query, queryargs)
-    db.commit()
-
-
-def insert_wallet_raw(
-    siteid: int,
-    profileid: int,
-    name: str,
-    address: str,
-    owned: bool,
-    enabled: bool,
-    haschild: bool,
-    db: Db,
-) -> None:
-    query = """INSERT OR IGNORE INTO wallet 
-                (site_id, profile_id, name, address, owned, enabled, haschild) 
-            VALUES (?,?,?,?,?,?,?);"""
-    queryargs = (
-        siteid,
-        profileid,
-        name,
-        address,
-        owned,
-        enabled,
-        haschild,
-    )
-    db.execute(query, queryargs)
-    db.commit()
 
 
 def get_wallet_raw_own(
@@ -131,14 +72,14 @@ def get_wallet_raw_notown(
         )
         res_wallet = get_wallet_id_notowned(site.id, profileid, db)
     wallet_parent_id = res_wallet[0][0]
-    res_wchild = get_walletchild_id_notowned(address, wallet_parent_id, db)
+    res_wchild = get_walletchild_id(address, wallet_parent_id, db)
     if len(res_wchild) > 1:
         raise DbError(
             f"Multiple wallets found with same address: {address} for site {site.name}"
         )
     if len(res_wchild) == 0:
         insert_walletchild_raw(wallet_parent_id, address, True, db)
-        res_wchild = get_walletchild_id_notowned(address, wallet_parent_id, db)
+        res_wchild = get_walletchild_id(address, wallet_parent_id, db)
 
     return (wallet_parent_id, res_wchild[0][0])
 

@@ -8,6 +8,9 @@ Database Handler Class
 """
 import logging
 
+from netaddr import P
+from numpy import add
+
 from src.data.dbschemadata import Wallet
 from src.db.db import Db
 from src.errors.dberrors import DbError
@@ -21,17 +24,39 @@ def insert_wallet(wallet: Wallet, db: Db) -> None:
         raise DbError(
             f"Not allowed to create new wallet with same address and site {wallet}"
         )
+    insert_wallet_raw(
+        siteid=None if wallet.site == None else wallet.site.id,
+        profileid=wallet.profile.id,
+        name=wallet.name,
+        address=wallet.address,
+        owned=wallet.owned,
+        enabled=wallet.enabled,
+        haschild=wallet.haschild,
+        db=db,
+    )
+
+
+def insert_wallet_raw(
+    siteid: int | None,
+    profileid: int,
+    name: str,
+    address: str,
+    owned: bool,
+    enabled: bool,
+    haschild: bool,
+    db: Db,
+) -> None:
     query = """INSERT OR IGNORE INTO wallet 
                 (site_id, profile_id, name, address, owned, enabled, haschild) 
-            VALUES (?,?,?,?,?,?);"""
+            VALUES (?,?,?,?,?,?,?);"""
     queryargs = (
-        None if wallet.site == None else wallet.site.id,
-        wallet.profile.id,
-        wallet.name,
-        wallet.address,
-        wallet.owned,
-        wallet.enabled,
-        wallet.haschild,
+        siteid,
+        profileid,
+        name,
+        address,
+        owned,
+        enabled,
+        haschild,
     )
     db.execute(query, queryargs)
     db.commit()
@@ -93,6 +118,21 @@ def get_all_active_wallets(db: Db) -> list:
     log.debug(f"Record of wallets in database: {result}")
     if len(result) == 0:
         log.info(f"No records found of a wallet in database")
+    return result
+
+
+def get_wallet_id2(address: str, siteid: int, profileid: int, db: Db):
+    """Get wallet from db, for specific address and site and profile"""
+    query = "SELECT id FROM wallet WHERE profile_id=? AND site_id=? AND address=?;"
+    queryargs = (profileid, siteid, address)
+    result = db.query(query, queryargs)
+    return result
+
+
+def get_wallet_id_notowned(siteid: int, profileid: int, db: Db):
+    query = "SELECT id FROM wallet WHERE owned=false AND site_id=? AND profile_id=?;"
+    queryargs = (siteid, profileid)
+    result = db.query(query, queryargs)
     return result
 
 
