@@ -56,7 +56,7 @@ class ArkfolioController:
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         address_ok = sitemodel.check_address(address)
-        if not address_ok:
+        if address_ok == 0:
             log.info(f"{sitemodel.site.name} address is not valid: {address}")
             return
 
