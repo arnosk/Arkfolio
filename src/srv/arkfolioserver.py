@@ -8,9 +8,12 @@ Server for ArkFolio
 """
 import logging
 
+from requests import RequestException
+
 from src.data.dbschemadata import Wallet
 from src.db.db import Db
 from src.db.dbinit import db_init
+from src.errors.dberrors import DbError
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
 from src.srv.serverhelper import get_wallets_per_site
@@ -42,8 +45,13 @@ class ArkfolioServer:
         for siteid, wallets in sites_wallets.items():
             # addresses: dict[int, list[str]] = {}  # int is for profileid
             for wallet in wallets:
-                # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
-                self.sitemodels[siteid].search_transactions(wallet, self.db)
+                # TODO: This must be done every day...
+                # TODO: Errors, like no connection, database fault must be shown to user
+                try:
+                    # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
+                    self.sitemodels[siteid].search_transactions(wallet, self.db)
+                except (DbError, RequestException) as e:
+                    log.exception(f"Error: {e}")
 
             log.debug(
                 f"Found addresses for {self.sitemodels[siteid].site.name} "
