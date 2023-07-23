@@ -55,12 +55,18 @@ class ArkfolioController:
         self.profile = get_profile(name, self.db)
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
+        address_ok = sitemodel.check_address(address)
+        if not address_ok:
+            log.info(f"{sitemodel.site.name} address is not valid: {address}")
+            return
+
         wallet = Wallet(site=sitemodel.site, profile=self.profile, address=address)
         wallet_exists = check_wallet_exists(wallet, self.db)
         if wallet_exists:
             log.info(
-                f"""Wallet already exists with same site/chain and address: 
-                {'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"""
+                f"Wallet already exists with same site/chain and address: "
+                f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
             )
             return
+
         insert_wallet(wallet, self.db)

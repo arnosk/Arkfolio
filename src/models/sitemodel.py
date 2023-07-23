@@ -50,6 +50,11 @@ class SiteModel(ABC):
         """Initialization the assets used by this site model in database"""
         log.debug(f"No Asset initialize for {self.site.name} with database")
 
+    def check_address(self, address: str) -> bool:
+        """Check the validity of an address,"""
+        log.debug(f"No check for address for {self.site.name}")
+        return False
+
     def search_transactions(self, wallet: Wallet, db: Db) -> None:
         log.debug(
             f"Start searching transactions for {wallet.address} on {self.site.name}"
