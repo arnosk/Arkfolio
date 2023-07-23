@@ -74,9 +74,9 @@ def _get_transactions_blockchaininfo(
             n_tx = resp["n_tx"]
             balance = resp["final_balance"]
             txs = resp["txs"]
-            log.debug(f"Address {acc} has {n_tx} all time txns, balance = {balance}")
+            log.debug(f"Address {acc} has {n_tx} all time txns, balance={balance}")
             log.debug(
-                f"Retrieving {len(txs)} txns from offset {offset} and time {last_time} ({convert_timestamp(last_time)})"
+                f"Reading {len(txs)} txns from offset={offset}, last time={last_time} ({convert_timestamp(last_time)})"
             )
             for tx in txs:
                 tx_i = tx_i + 1
@@ -88,6 +88,11 @@ def _get_transactions_blockchaininfo(
                 tx_time = tx["time"]
 
                 if tx_time <= int(last_time):
+                    log.debug(
+                        f"Stop reading txns because tx time <= last time:"
+                        f"{tx_time} ({convert_timestamp(tx_time)} <= "
+                        f"{last_time} ({convert_timestamp(last_time)}"
+                    )
                     break
 
                 for input in tx["inputs"]:
