@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-07-10
+@modified: 2023-08-08
 
 Controller for ArkFolio
 

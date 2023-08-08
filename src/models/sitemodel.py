@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-07-22
+@modified: 2023-08-08
 
 Abstract class for all sites
 
@@ -52,7 +52,8 @@ class SiteModel(ABC):
 
     def check_address(self, address: str) -> int:
         """Check the validity of an address
-        0 = incorrect, 1 = ok, 2 = ok, but is master public key"""
+        0 = incorrect, 1 = normal address,
+        2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
         log.debug(f"No check for {self.site.name} address")
         return 0
 

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-07-10
+@modified: 2023-08-08
 
 Sitemodel for bitcoin blockchain
 
@@ -9,7 +9,7 @@ Sitemodel for bitcoin blockchain
 import logging
 import time
 
-from pycoin.symbols.btc import network
+from pycoin.symbols.btc import network  # type: ignore
 
 import config
 from src.data.dbschemadata import Asset, Site, TransactionRaw
@@ -45,17 +45,16 @@ class Bitcoin(SiteModel):
 
     def check_address(self, address: str) -> int:
         """Check the validity of an address
-        0 = incorrect, 1 = ok, 2 = ok, but is master public key"""
+        0 = incorrect, 1 = normal address,
+        2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
         if network.parse.address(address):
             log.debug(f"Validating result: address - {address}")
             return 1
-        key = network.parse.bip32_pub(address)
-        if key:
+        wallet = network.parse.bip32_pub(address)
+        if wallet:
             log.debug(f"Validating result: xpub - {address}")
-            child = key.address()  # .derive(address, "84'/1'/0'/0/0")
-            log.debug(f"Validating result: child- {child}")
-            for k in key.subkeys("0-1/0-4"):
-                log.debug(f"{k.address()}")
+            for key in wallet.subkeys("0-1/0-4"):
+                log.debug(f"{key.address()}")
             return 2
         if network.parse.bip49_pub(address):
             log.debug(f"Validating result: ypub - {address}")
@@ -66,8 +65,8 @@ class Bitcoin(SiteModel):
         wallet = network.parse.electrum_pub("E:" + address)
         if wallet:
             log.debug(f"Validating result: electrum mpk - {address}")
-            for k in wallet.subkeys("0-4/0-1"):
-                log.debug(f"loop:  {k.address()}")
+            for key in wallet.subkeys("0-4/0-1"):
+                log.debug(f"loop:  {key.address()}")
             # receiving addresses
             log.debug(f"{wallet.subkey('0/0').address()}")
             log.debug(f"{wallet.subkey('1/0').address()}")
