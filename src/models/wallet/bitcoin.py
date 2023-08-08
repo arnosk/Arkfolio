@@ -9,7 +9,7 @@ Sitemodel for bitcoin blockchain
 import logging
 import time
 
-import coinaddrvalidator  # import ValidationResult, validate
+from pycoin.symbols.btc import network
 
 import config
 from src.data.dbschemadata import Asset, Site, TransactionRaw
@@ -46,14 +46,41 @@ class Bitcoin(SiteModel):
     def check_address(self, address: str) -> int:
         """Check the validity of an address
         0 = incorrect, 1 = ok, 2 = ok, but is master public key"""
-        validation: coinaddrvalidator.ValidationResult = coinaddrvalidator.validate(
-            "btc", address
-        )
-        result: bool = False
-        if validation.name != "":
-            result = validation.valid + validation.is_extended
-        log.debug(f"Validating result: {result} ; {validation}")
-        return result
+        if network.parse.address(address):
+            log.debug(f"Validating result: address - {address}")
+            return 1
+        key = network.parse.bip32_pub(address)
+        if key:
+            log.debug(f"Validating result: xpub - {address}")
+            child = key.address()  # .derive(address, "84'/1'/0'/0/0")
+            log.debug(f"Validating result: child- {child}")
+            for k in key.subkeys("0-1/0-4"):
+                log.debug(f"{k.address()}")
+            return 2
+        if network.parse.bip49_pub(address):
+            log.debug(f"Validating result: ypub - {address}")
+            return 3
+        if network.parse.bip84_pub(address):
+            log.debug(f"Validating result: zpub - {address}")
+            return 4
+        wallet = network.parse.electrum_pub("E:" + address)
+        if wallet:
+            log.debug(f"Validating result: electrum mpk - {address}")
+            for k in wallet.subkeys("0-4/0-1"):
+                log.debug(f"loop:  {k.address()}")
+            # receiving addresses
+            log.debug(f"{wallet.subkey('0/0').address()}")
+            log.debug(f"{wallet.subkey('1/0').address()}")
+            log.debug(f"{wallet.subkey('2/0').address()}")
+            log.debug(f"{wallet.subkey('3/0').address()}")
+            # change addresses
+            log.debug(f"{wallet.subkey('0/1').address()}")
+            log.debug(f"{wallet.subkey('1/1').address()}")
+            log.debug(f"{wallet.subkey('2/1').address()}")
+            log.debug(f"{wallet.subkey('3/1').address()}")
+            return 5
+        log.debug(f"Validating result: invalid address - {address}")
+        return 0
 
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)
