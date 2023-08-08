@@ -9,6 +9,7 @@ Controller for ArkFolio
 import logging
 from typing import Protocol
 
+import configprivate as conf
 from src.data.dbschemadata import Profile, Wallet
 from src.db.db import Db
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
@@ -44,7 +45,9 @@ class ArkfolioController:
         sitemodels: dict[int, SiteModel] = self.srv.sitemodels
 
         # Temp for testing first site, create wallet in db
-        self.create_wallet(sitemodels[1], "1PeizMg76Cf96nUQrYg8xuoZWLQozU5zGW")
+        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
+        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
+        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name
@@ -69,4 +72,4 @@ class ArkfolioController:
             )
             return
 
-        insert_wallet(wallet, self.db)
+        # insert_wallet(wallet, self.db)

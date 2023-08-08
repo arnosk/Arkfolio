@@ -52,8 +52,8 @@ class SiteModel(ABC):
 
     def check_address(self, address: str) -> int:
         """Check the validity of an address
-        0 = incorrect, 1 = ok, 2 = ok, but is master address like zpub"""
-        log.debug(f"No check for address for {self.site.name}")
+        0 = incorrect, 1 = ok, 2 = ok, but is master public key"""
+        log.debug(f"No check for {self.site.name} address")
         return 0
 
     def search_transactions(self, wallet: Wallet, db: Db) -> None:

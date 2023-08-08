@@ -9,6 +9,8 @@ Sitemodel for bitcoin blockchain
 import logging
 import time
 
+import coinaddrvalidator  # import ValidationResult, validate
+
 import config
 from src.data.dbschemadata import Asset, Site, TransactionRaw
 from src.data.dbschematypes import SiteType, TransactionType
@@ -40,6 +42,18 @@ class Bitcoin(SiteModel):
         log.debug(f"Asset initialize for {self.site.name} with database")
         asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
         insert_asset(asset, db)
+
+    def check_address(self, address: str) -> int:
+        """Check the validity of an address
+        0 = incorrect, 1 = ok, 2 = ok, but is master public key"""
+        validation: coinaddrvalidator.ValidationResult = coinaddrvalidator.validate(
+            "btc", address
+        )
+        result: bool = False
+        if validation.name != "":
+            result = validation.valid + validation.is_extended
+        log.debug(f"Validating result: {result} ; {validation}")
+        return result
 
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)
