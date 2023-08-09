@@ -17,6 +17,7 @@ from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
 from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbasset import insert_asset
+from src.errors.modelerrors import WalletAddressTypeError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.req.requesthelper import request_get_dict
@@ -40,7 +41,7 @@ class Bitcoin(SiteModel):
     def asset_dbinit(self, db: Db) -> None:
         """Initialize asset bitcoin, BTC. No AssetOnSite necessary"""
         log.debug(f"Asset initialize for {self.site.name} with database")
-        asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
+        asset: Asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
         insert_asset(asset, db)
 
     def check_address(self, address: str) -> WalletAddressType:
@@ -50,21 +51,8 @@ class Bitcoin(SiteModel):
         if network.parse.address(address):
             log.debug(f"Validating result: address - {address}")
             return WalletAddressType.NORMAL
-        wallet = network.parse.bip32_pub(address)
-        if wallet:
+        if network.parse.bip32_pub(address):
             log.debug(f"Validating result: xpub - {address}")
-            for key in wallet.subkeys("0-1/0-4"):
-                log.debug(f"loop:  {key.address()}")
-            # receiving addresses
-            log.debug(f"{wallet.subkey(0).subkey(0).address()}")
-            log.debug(f"{wallet.subkey(0).subkey(1).address()}")
-            log.debug(f"{wallet.subkey(0).subkey(2).address()}")
-            log.debug(f"{wallet.subkey(0).subkey(3).address()}")
-            # change addresses
-            log.debug(f"{wallet.subkey(1).subkey(0).address()}")
-            log.debug(f"{wallet.subkey(1).subkey(1).address()}")
-            log.debug(f"{wallet.subkey(1).subkey(2).address()}")
-            log.debug(f"{wallet.subkey(1).subkey(3).address()}")
             return WalletAddressType.XPUB
         if network.parse.bip49_pub(address):
             log.debug(f"Validating result: ypub - {address}")
@@ -72,9 +60,23 @@ class Bitcoin(SiteModel):
         if network.parse.bip84_pub(address):
             log.debug(f"Validating result: zpub - {address}")
             return WalletAddressType.ZPUB
-        wallet = network.parse.electrum_pub("E:" + address)
-        if wallet:
+        if network.parse.electrum_pub("E:" + address):
             log.debug(f"Validating result: electrum mpk - {address}")
+            return WalletAddressType.ELECTRUM
+        log.debug(f"Validating result: invalid address - {address}")
+        return WalletAddressType.INVALID
+
+    def get_child_address(self, pub: str, type: WalletAddressType) -> str:
+        if type == WalletAddressType.NORMAL or type == WalletAddressType.INVALID:
+            raise WalletAddressTypeError(
+                f"Wallet address type must be a master public key type: {pub} - {type}"
+            )
+        if type == WalletAddressType.ELECTRUM:
+            wallet = network.parse.electrum_pub("E:" + pub)
+            if wallet == None:
+                raise WalletAddressTypeError(
+                    f"Public key is not an electrum mpk: {pub} - {type}"
+                )
             for key in wallet.subkeys("0-4/0-1"):
                 log.debug(f"loop:  {key.address()}")
             # receiving addresses
@@ -87,14 +89,33 @@ class Bitcoin(SiteModel):
             log.debug(f"{wallet.subkey('1/1').address()}")
             log.debug(f"{wallet.subkey('2/1').address()}")
             log.debug(f"{wallet.subkey('3/1').address()}")
-            return WalletAddressType.ELECTRUM
-        log.debug(f"Validating result: invalid address - {address}")
-        return WalletAddressType.INVALID
+            return wallet.subkey("0/0").address()
+        # else:
+        wallet = None
+        if type == WalletAddressType.XPUB:
+            wallet = network.parse.bip32_pub(pub)
+        if type == WalletAddressType.YPUB:
+            wallet = network.parse.bip49_pub(pub)
+        if type == WalletAddressType.ZPUB:
+            wallet = network.parse.bip84_pub(pub)
 
-    def get_child_address(self, pub: str, type: int) -> str:
-        if type == 5:
-            return ""
-        return ""
+        if wallet == None:
+            raise WalletAddressTypeError(
+                f"Public key or addresstype is not a correct: {pub} - {type}"
+            )
+        for key in wallet.subkeys("0-1/0-4"):
+            log.debug(f"loop:  {key.address()}")
+        # receiving addresses
+        log.debug(f"{wallet.subkey(0).subkey(0).address()}")
+        log.debug(f"{wallet.subkey(0).subkey(1).address()}")
+        log.debug(f"{wallet.subkey(0).subkey(2).address()}")
+        log.debug(f"{wallet.subkey(0).subkey(3).address()}")
+        # change addresses
+        log.debug(f"{wallet.subkey(1).subkey(0).address()}")
+        log.debug(f"{wallet.subkey(1).subkey(1).address()}")
+        log.debug(f"{wallet.subkey(1).subkey(2).address()}")
+        log.debug(f"{wallet.subkey(1).subkey(3).address()}")
+        return wallet.subkey(0).subkey(0).address()
 
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-07-14
+@modified: 2023-08-09
 
 Server for ArkFolio
 
@@ -47,6 +47,7 @@ class ArkfolioServer:
             for wallet in wallets:
                 # TODO: This must be done every day...
                 # TODO: Errors, like no connection, database fault must be shown to user
+                # TODO: Check public wallets for new child address
                 try:
                     # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
                     self.sitemodels[siteid].search_transactions(wallet, self.db)
