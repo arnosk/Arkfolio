@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from src.data.dbschematypes import SiteType, TransactionType
+from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
 from src.data.money import Money
 from src.data.types import Timestamp
 
@@ -46,7 +46,7 @@ class Wallet:
     site: Optional[Site] = field(default=None)
     name: str = ""
     address: str = ""
-    addresstype: int = 0
+    addresstype: WalletAddressType = WalletAddressType.INVALID
     enabled: bool = True
     owned: bool = True
     haschild: bool = False

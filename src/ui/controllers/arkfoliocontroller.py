@@ -59,13 +59,18 @@ class ArkfolioController:
         self.profile = get_profile(name, self.db)
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
-        address_ok = sitemodel.check_address(address)
-        if address_ok == WalletAddressType.INVALID:
+        addresstype: WalletAddressType = sitemodel.check_address(address)
+        if addresstype == WalletAddressType.INVALID:
             log.info(f"{sitemodel.site.name} address is not valid: {address}")
             return
 
-        wallet = Wallet(site=sitemodel.site, profile=self.profile, address=address)
-        if address_ok != WalletAddressType.NORMAL:
+        wallet = Wallet(
+            site=sitemodel.site,
+            profile=self.profile,
+            address=address,
+            addresstype=addresstype,
+        )
+        if addresstype != WalletAddressType.NORMAL:
             wallet.haschild = True
         wallet_exists = check_wallet_exists(wallet, self.db)
         if wallet_exists:

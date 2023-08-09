@@ -29,7 +29,7 @@ def insert_wallet(wallet: Wallet, db: Db) -> None:
         profileid=wallet.profile.id,
         name=wallet.name,
         address=wallet.address,
-        addresstype=wallet.addresstype,
+        addresstype=wallet.addresstype.value,
         owned=wallet.owned,
         enabled=wallet.enabled,
         haschild=wallet.haschild,
