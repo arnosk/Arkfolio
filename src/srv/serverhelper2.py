@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-07-22
+@modified: 2023-08-09
 
 Helper functions for Server
 
@@ -63,7 +63,15 @@ def get_wallet_raw_notown(
     if len(res_wallet) == 0:
         unknown_name = f"Unknowns {site.name}"
         insert_wallet_raw(
-            site.id, profileid, unknown_name, unknown_name, False, False, True, db
+            siteid=site.id,
+            profileid=profileid,
+            name=unknown_name,
+            address=unknown_name,
+            addresstype=0,
+            owned=False,
+            enabled=False,
+            haschild=True,
+            db=db,
         )
         res_wallet = get_wallet_id_notowned(site.id, profileid, db)
     wallet_parent_id = res_wallet[0][0]
