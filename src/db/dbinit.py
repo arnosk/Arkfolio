@@ -1,14 +1,14 @@
 """
 @author: Arno
 @created: 2023-05-19
-@modified: 2023-05-27
+@modified: 2023-08-09
 
 Database Handler Class
 
 """
 import logging
 
-from src.data.dbschematypes import SiteType, TransactionType
+from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
 from src.db.db import Db
 from src.db.schema import DB_SCRIPT_CREATE_TABLES
 from src.errors.dberrors import DbError
@@ -46,6 +46,7 @@ def _postconnect(db: Db) -> None:
     db.executescript(DB_SCRIPT_CREATE_TABLES)
     _insert_site_types(db)
     _insert_transaction_types(db)
+    _insert_walletaddress_types(db)
     db.execute(DB_UPDATE_VERSION, (1,))
     db.commit()
 
@@ -70,6 +71,15 @@ def _insert_transaction_types(db: Db) -> None:
                 f"Unable to initiate transaction type {type.value}:{type.name}"
             )
         db.execute(DB_INSERT_TYPE, (type.value, type_name[0], type_name[1]))
+    db.commit()
+
+
+def _insert_walletaddress_types(db: Db) -> None:
+    """Insert rows according to enum data type"""
+    log.debug("Start inserting enumeration of WalletAddressType to database")
+    DB_INSERT_TYPE = "INSERT OR IGNORE INTO walletaddresstype VALUES (?, ?);"
+    for type in WalletAddressType:
+        db.execute(DB_INSERT_TYPE, (type.value, type.name))
     db.commit()
 
 

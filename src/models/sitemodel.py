@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-08
+@modified: 2023-08-09
 
 Abstract class for all sites
 
@@ -13,6 +13,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet
+from src.data.dbschematypes import WalletAddressType
 from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbscrapingtxn import (
@@ -50,12 +51,12 @@ class SiteModel(ABC):
         """Initialization the assets used by this site model in database"""
         log.debug(f"No Asset initialize for {self.site.name} with database")
 
-    def check_address(self, address: str) -> int:
+    def check_address(self, address: str) -> WalletAddressType:
         """Check the validity of an address
         0 = incorrect, 1 = normal address,
         2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
         log.debug(f"No check for {self.site.name} address")
-        return 0
+        return WalletAddressType.INVALID
 
     def search_transactions(self, wallet: Wallet, db: Db) -> None:
         log.debug(

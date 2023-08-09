@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-07-08
+@modified: 2023-08-09
 
 Database Handler Class
 
@@ -29,6 +29,7 @@ def insert_wallet(wallet: Wallet, db: Db) -> None:
         profileid=wallet.profile.id,
         name=wallet.name,
         address=wallet.address,
+        addresstype=wallet.addresstype,
         owned=wallet.owned,
         enabled=wallet.enabled,
         haschild=wallet.haschild,
@@ -41,19 +42,21 @@ def insert_wallet_raw(
     profileid: int,
     name: str,
     address: str,
+    addresstype: int,
     owned: bool,
     enabled: bool,
     haschild: bool,
     db: Db,
 ) -> None:
     query = """INSERT OR IGNORE INTO wallet 
-                (site_id, profile_id, name, address, owned, enabled, haschild) 
-            VALUES (?,?,?,?,?,?,?);"""
+                (site_id, profile_id, name, address, addresstype, owned, enabled, haschild) 
+            VALUES (?,?,?,?,?,?,?,?);"""
     queryargs = (
         siteid,
         profileid,
         name,
         address,
+        addresstype,
         owned,
         enabled,
         haschild,
@@ -92,7 +95,7 @@ def get_wallet_ids(wallet: Wallet, db: Db):
 
 
 def get_wallet(id: int, db: Db) -> tuple:
-    query = """SELECT id, site_id, profile_id, name, address, owned, enabled, haschild 
+    query = """SELECT id, site_id, profile_id, name, address, addresstype, owned, enabled, haschild 
             FROM wallet WHERE id=?;"""
     result = db.query(query, (id,))
     log.debug(f"Record of wallet id {id} in database: {result}")

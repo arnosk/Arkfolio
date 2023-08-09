@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-07-14
+@modified: 2023-08-09
 
 Data Classes for data from database
 
@@ -46,6 +46,7 @@ class Wallet:
     site: Optional[Site] = field(default=None)
     name: str = ""
     address: str = ""
+    addresstype: int = 0
     enabled: bool = True
     owned: bool = True
     haschild: bool = False

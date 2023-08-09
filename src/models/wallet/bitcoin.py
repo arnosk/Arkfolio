@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-08
+@modified: 2023-08-09
 
 Sitemodel for bitcoin blockchain
 
@@ -13,7 +13,7 @@ from pycoin.symbols.btc import network  # type: ignore
 
 import config
 from src.data.dbschemadata import Asset, Site, TransactionRaw
-from src.data.dbschematypes import SiteType, TransactionType
+from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
 from src.data.types import Timestamp
 from src.db.db import Db
 from src.db.dbasset import insert_asset
@@ -43,25 +43,35 @@ class Bitcoin(SiteModel):
         asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
         insert_asset(asset, db)
 
-    def check_address(self, address: str) -> int:
+    def check_address(self, address: str) -> WalletAddressType:
         """Check the validity of an address
         0 = incorrect, 1 = normal address,
         2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
         if network.parse.address(address):
             log.debug(f"Validating result: address - {address}")
-            return 1
+            return WalletAddressType.NORMAL
         wallet = network.parse.bip32_pub(address)
         if wallet:
             log.debug(f"Validating result: xpub - {address}")
             for key in wallet.subkeys("0-1/0-4"):
-                log.debug(f"{key.address()}")
-            return 2
+                log.debug(f"loop:  {key.address()}")
+            # receiving addresses
+            log.debug(f"{wallet.subkey(0).subkey(0).address()}")
+            log.debug(f"{wallet.subkey(0).subkey(1).address()}")
+            log.debug(f"{wallet.subkey(0).subkey(2).address()}")
+            log.debug(f"{wallet.subkey(0).subkey(3).address()}")
+            # change addresses
+            log.debug(f"{wallet.subkey(1).subkey(0).address()}")
+            log.debug(f"{wallet.subkey(1).subkey(1).address()}")
+            log.debug(f"{wallet.subkey(1).subkey(2).address()}")
+            log.debug(f"{wallet.subkey(1).subkey(3).address()}")
+            return WalletAddressType.XPUB
         if network.parse.bip49_pub(address):
             log.debug(f"Validating result: ypub - {address}")
-            return 3
+            return WalletAddressType.YPUB
         if network.parse.bip84_pub(address):
             log.debug(f"Validating result: zpub - {address}")
-            return 4
+            return WalletAddressType.ZPUB
         wallet = network.parse.electrum_pub("E:" + address)
         if wallet:
             log.debug(f"Validating result: electrum mpk - {address}")
@@ -77,9 +87,14 @@ class Bitcoin(SiteModel):
             log.debug(f"{wallet.subkey('1/1').address()}")
             log.debug(f"{wallet.subkey('2/1').address()}")
             log.debug(f"{wallet.subkey('3/1').address()}")
-            return 5
+            return WalletAddressType.ELECTRUM
         log.debug(f"Validating result: invalid address - {address}")
-        return 0
+        return WalletAddressType.INVALID
+
+    def get_child_address(self, pub: str, type: int) -> str:
+        if type == 5:
+            return ""
+        return ""
 
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)

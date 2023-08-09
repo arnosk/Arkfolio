@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-08
+@modified: 2023-08-09
 
 Controller for ArkFolio
 
@@ -11,6 +11,7 @@ from typing import Protocol
 
 import configprivate as conf
 from src.data.dbschemadata import Profile, Wallet
+from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, insert_wallet
@@ -59,11 +60,13 @@ class ArkfolioController:
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         address_ok = sitemodel.check_address(address)
-        if address_ok == 0:
+        if address_ok == WalletAddressType.INVALID:
             log.info(f"{sitemodel.site.name} address is not valid: {address}")
             return
 
         wallet = Wallet(site=sitemodel.site, profile=self.profile, address=address)
+        if address_ok != WalletAddressType.NORMAL:
+            wallet.haschild = True
         wallet_exists = check_wallet_exists(wallet, self.db)
         if wallet_exists:
             log.info(

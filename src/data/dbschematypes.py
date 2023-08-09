@@ -1,12 +1,12 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-05-27
+@modified: 2023-08-09
 
 Enum Classes for data in database
 
 """
-from enum import Enum, auto
+from enum import Enum
 
 
 class SiteType(Enum):
@@ -39,3 +39,14 @@ class TransactionType(Enum):
     OUT_LOSS = 401
     OUT_UNDEFINED = 499
     UNDEF_UNDEFINED = 999
+
+
+class WalletAddressType(Enum):
+    """Class for type of wallet address"""
+
+    INVALID = 0
+    NORMAL = 1
+    XPUB = 2  # BIP32
+    YPUB = 3  # BIP49
+    ZPUB = 4  # BIP84
+    ELECTRUM = 5  # MPK
