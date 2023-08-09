@@ -8,7 +8,12 @@ Database Handler Class
 """
 import logging
 
-from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
+from src.data.dbschematypes import (
+    ChildAddressType,
+    SiteType,
+    TransactionType,
+    WalletAddressType,
+)
 from src.db.db import Db
 from src.db.schema import DB_SCRIPT_CREATE_TABLES
 from src.errors.dberrors import DbError
@@ -47,6 +52,7 @@ def _postconnect(db: Db) -> None:
     _insert_site_types(db)
     _insert_transaction_types(db)
     _insert_walletaddress_types(db)
+    _insert_walletchildaddress_types(db)
     db.execute(DB_UPDATE_VERSION, (1,))
     db.commit()
 
@@ -79,6 +85,15 @@ def _insert_walletaddress_types(db: Db) -> None:
     log.debug("Start inserting enumeration of WalletAddressType to database")
     DB_INSERT_TYPE = "INSERT OR IGNORE INTO walletaddresstype VALUES (?, ?);"
     for type in WalletAddressType:
+        db.execute(DB_INSERT_TYPE, (type.value, type.name))
+    db.commit()
+
+
+def _insert_walletchildaddress_types(db: Db) -> None:
+    """Insert rows according to enum data type"""
+    log.debug("Start inserting enumeration of ChildAddressType to database")
+    DB_INSERT_TYPE = "INSERT OR IGNORE INTO childaddresstype VALUES (?, ?);"
+    for type in ChildAddressType:
         db.execute(DB_INSERT_TYPE, (type.value, type.name))
     db.commit()
 

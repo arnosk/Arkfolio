@@ -50,3 +50,11 @@ class WalletAddressType(Enum):
     YPUB = 3  # BIP49
     ZPUB = 4  # BIP84
     ELECTRUM = 5  # MPK
+
+
+class ChildAddressType(Enum):
+    """Class for type of child address"""
+
+    NORMAL = 0
+    RECEIVING = 1
+    CHANGE = 2

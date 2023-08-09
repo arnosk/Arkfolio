@@ -10,7 +10,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
+from src.data.dbschematypes import (
+    ChildAddressType,
+    SiteType,
+    TransactionType,
+    WalletAddressType,
+)
 from src.data.money import Money
 from src.data.types import Timestamp
 
@@ -60,6 +65,7 @@ class WalletChild:
     parent: Wallet
     used: bool
     address: str = ""
+    type: ChildAddressType = ChildAddressType.NORMAL
     id: int = 0
 
 

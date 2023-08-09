@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-07-22
+@modified: 2023-08-09
 
 Database Handler Class
 
@@ -24,18 +24,20 @@ def insert_walletchild(walletchild: WalletChild, db: Db) -> None:
     insert_walletchild_raw(
         parentid=walletchild.parent.id,
         address=walletchild.address,
+        type=walletchild.type.value,
         used=walletchild.used,
         db=db,
     )
 
 
-def insert_walletchild_raw(parentid: int, address: str, used: bool, db: Db):
+def insert_walletchild_raw(parentid: int, address: str, type: int, used: bool, db: Db):
     query = """INSERT OR IGNORE INTO walletchild 
-                (parent_id, address, used) 
-            VALUES (?,?,?);"""
+                (parent_id, address, type, used) 
+            VALUES (?,?,?,?);"""
     queryargs = (
         parentid,
         address,
+        type,
         used,
     )
     db.execute(query, queryargs)
@@ -58,14 +60,16 @@ def get_walletchild_id(address: str, parentid: int, db: Db):
 
 
 def get_walletchild_ids(address: str, db: Db):
-    query = "SELECT id, parent_id, address, used FROM walletchild WHERE address=?;"
+    query = (
+        "SELECT id, parent_id, address, type, used FROM walletchild WHERE address=?;"
+    )
     queryargs = (address,)
     result = db.query(query, queryargs)
     return result
 
 
 def get_walletchild(id: int, db: Db):
-    query = "SELECT id, parent_id, address, used FROM walletchild WHERE id=?;"
+    query = "SELECT id, parent_id, address, type, used FROM walletchild WHERE id=?;"
     result = db.query(query, (id,))
     log.debug(f"Record of walletchild id {id} in database: {result}")
     if len(result) == 0:
@@ -74,7 +78,9 @@ def get_walletchild(id: int, db: Db):
 
 
 def get_walletchilds(parentid: int, db: Db) -> list:
-    query = "SELECT id, parent_id, address, used FROM walletchild WHERE parent_id=?;"
+    query = (
+        "SELECT id, parent_id, address, type, used FROM walletchild WHERE parent_id=?;"
+    )
     result = db.query(query, (parentid,))
     log.debug(f"Record of walletchild in database: {result}")
     if len(result) == 0:

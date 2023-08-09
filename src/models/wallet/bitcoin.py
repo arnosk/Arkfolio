@@ -71,6 +71,15 @@ class Bitcoin(SiteModel):
             raise WalletAddressTypeError(
                 f"Wallet address type must be a master public key type: {pub} - {type}"
             )
+
+        # TODO: distinguish child address by childaddresstype: receiving vs change for bitcoin
+        # TODO: add column in chlld address table
+        # TODO: get nr of existing child addresses in db for receiving and change address
+        # TODO: per child address type, calculate next child address
+        # TODO: check if the nr of transactions, if greater than 0, add to child address table
+        # TODO: repeat until nr of tx is 0 for every child address type, also add this to db
+        # TODO: in server, when checking txs, also calculate next child address and check on txs
+
         if type == WalletAddressType.ELECTRUM:
             wallet = network.parse.electrum_pub("E:" + pub)
             if wallet == None:

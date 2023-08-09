@@ -81,7 +81,9 @@ def get_wallet_raw_notown(
             f"Multiple wallets found with same address: {address} for site {site.name}"
         )
     if len(res_wchild) == 0:
-        insert_walletchild_raw(wallet_parent_id, address, True, db)
+        insert_walletchild_raw(
+            parentid=wallet_parent_id, address=address, type=0, used=True, db=db
+        )
         res_wchild = get_walletchild_id(address, wallet_parent_id, db)
 
     return (wallet_parent_id, res_wchild[0][0])
