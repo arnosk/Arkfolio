@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-09
+@modified: 2023-08-10
 
 Abstract class for all sites
 
@@ -39,8 +39,8 @@ class SiteModel(ABC):
         All other times: read sitemodel from database
         """
         log.debug(f"Site model initialize {self.site.name} with database")
-        insert_sitemodel(self.site, db)
-        site = get_sitemodel(self.site.id, db)
+        insert_sitemodel(db, self.site)
+        site = get_sitemodel(db, self.site.id)
         self.site.api = site[3]
         self.site.secret = site[4]
         self.site.hasprice = site[5]
@@ -63,21 +63,21 @@ class SiteModel(ABC):
             f"Start searching transactions for {wallet.address} on {self.site.name}"
         )
         if wallet.haschild:
-            addresses = get_walletchild_addresses(wallet.id, db)
+            addresses = get_walletchild_addresses(db, wallet.id)
         else:
             addresses = [wallet.address]
 
-        insert_ignore_scrapingtxn_raw(wallet.id, db)
-        last_time = get_scrapingtxn_timestamp_end(wallet, db)
+        insert_ignore_scrapingtxn_raw(db, wallet.id)
+        last_time = get_scrapingtxn_timestamp_end(db, wallet)
         txns = self.get_transactions(addresses, last_time)
         txns.sort()
         log.debug(f"New found transactions: {len(txns)}")
         for txn in txns:
             result_ok = process_and_insert_rawtransaction(
-                txn, wallet.profile.id, self.site, db
+                db, txn, wallet.profile.id, self.site
             )
             if result_ok:
-                update_scrapingtxn_raw(txn.timestamp + 1, wallet.id, db)
+                update_scrapingtxn_raw(db, txn.timestamp + 1, wallet.id)
         return
 
     def get_transactions(
@@ -97,7 +97,7 @@ class SiteModel(ABC):
     def set_api_secret(self, db: Db, api: str, secret: str) -> None:
         self.site.api = api
         self.site.secret = secret
-        update_sitemodel(self.site, db)
+        update_sitemodel(db, self.site)
 
     def convert_asset_to_own(self, assetname: str) -> str:
         """Converting assetname on site to the assetname used in this program"""

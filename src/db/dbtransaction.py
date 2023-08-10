@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-07-22
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -15,8 +15,8 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_transaction(txn: Transaction, db: Db) -> None:
-    asset_exists = check_transaction_exists(txn.txid, db)
+def insert_transaction(db: Db, txn: Transaction) -> None:
+    asset_exists = check_transaction_exists(db, txn.txid)
     if asset_exists:
         raise DbError(f"Not allowed to create new transaction with same hash {txn}")
     query = """INSERT OR IGNORE INTO transactions 
@@ -48,6 +48,7 @@ def insert_transaction(txn: Transaction, db: Db) -> None:
 
 
 def insert_transaction_raw(
+    db: Db,
     profileid: int,
     siteid: int,
     transactiontype: int,
@@ -63,7 +64,6 @@ def insert_transaction_raw(
     quantity_cents: int,
     fee_cents: int,
     note: str,
-    db: Db,
 ) -> int:
     query = """INSERT OR IGNORE INTO transactions 
                     (profile_id, site_id, transactiontype_id, timestamp, txid, 
@@ -94,15 +94,15 @@ def insert_transaction_raw(
     return result
 
 
-def check_transaction_exists(txid: str, db: Db) -> bool:
+def check_transaction_exists(db: Db, txid: str) -> bool:
     """Checks if asset on site exists in db"""
-    result = get_assetonsite_ids(txid, db)
+    result = get_assetonsite_ids(db, txid)
     if len(result) == 0:
         return False
     return True
 
 
-def get_assetonsite_ids(txid: str, db: Db):
+def get_assetonsite_ids(db: Db, txid: str):
     query = "SELECT id FROM transactions WHERE txid=?;"
     queryargs = (txid,)
     result = db.query(query, queryargs)

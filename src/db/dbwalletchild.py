@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-08-09
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -15,22 +15,24 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_walletchild(walletchild: WalletChild, db: Db) -> None:
-    wallet_exists = check_walletchild_exists(walletchild.address, db)
+def insert_walletchild(db: Db, walletchild: WalletChild) -> None:
+    wallet_exists = check_walletchild_exists(db, walletchild.address)
     if wallet_exists:
         raise DbError(
             f"Not allowed to create new child wallet with same address {walletchild}"
         )
     insert_walletchild_raw(
+        db=db,
         parentid=walletchild.parent.id,
         address=walletchild.address,
         type=walletchild.type.value,
         used=walletchild.used,
-        db=db,
     )
 
 
-def insert_walletchild_raw(parentid: int, address: str, type: int, used: bool, db: Db):
+def insert_walletchild_raw(
+    db: Db, parentid: int, address: str, type: int = 0, used: bool = True
+):
     query = """INSERT OR IGNORE INTO walletchild 
                 (parent_id, address, type, used) 
             VALUES (?,?,?,?);"""
@@ -44,22 +46,22 @@ def insert_walletchild_raw(parentid: int, address: str, type: int, used: bool, d
     db.commit()
 
 
-def check_walletchild_exists(address: str, db: Db) -> bool:
+def check_walletchild_exists(db: Db, address: str) -> bool:
     """Checks if address is unique"""
-    result = get_walletchild_ids(address, db)
+    result = get_walletchild_ids(db, address)
     if len(result) == 0:
         return False
     return True
 
 
-def get_walletchild_id(address: str, parentid: int, db: Db):
+def get_walletchild_id(db: Db, address: str, parentid: int):
     query = "SELECT id FROM walletchild WHERE parent_id=? AND address=?;"
     queryargs = (parentid, address)
     result = db.query(query, queryargs)
     return result
 
 
-def get_walletchild_ids(address: str, db: Db):
+def get_walletchild_ids(db: Db, address: str):
     query = (
         "SELECT id, parent_id, address, type, used FROM walletchild WHERE address=?;"
     )
@@ -68,7 +70,7 @@ def get_walletchild_ids(address: str, db: Db):
     return result
 
 
-def get_walletchild(id: int, db: Db):
+def get_walletchild(db: Db, id: int):
     query = "SELECT id, parent_id, address, type, used FROM walletchild WHERE id=?;"
     result = db.query(query, (id,))
     log.debug(f"Record of walletchild id {id} in database: {result}")
@@ -77,7 +79,7 @@ def get_walletchild(id: int, db: Db):
     return result
 
 
-def get_walletchilds(parentid: int, db: Db) -> list:
+def get_walletchilds(db: Db, parentid: int) -> list:
     query = (
         "SELECT id, parent_id, address, type, used FROM walletchild WHERE parent_id=?;"
     )
@@ -88,8 +90,8 @@ def get_walletchilds(parentid: int, db: Db) -> list:
     return result
 
 
-def get_walletchild_addresses(parentid: int, db: Db) -> list[str]:
-    result = get_walletchilds(parentid, db)
+def get_walletchild_addresses(db: Db, parentid: int) -> list[str]:
+    result = get_walletchilds(db, parentid)
     addresses: list[str] = []
     for res in result:
         addresses.append(res[2])

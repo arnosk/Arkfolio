@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-09
+@modified: 2023-08-10
 
 Helper functions for Server
 
@@ -20,7 +20,7 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def get_walletchild_ids_join(address: str, siteid: int, profileid: int, db: Db):
+def get_walletchild_ids_join(db: Db, address: str, siteid: int, profileid: int):
     """Get walletchild from db, for specific address and site and profile"""
     query = """SELECT walletchild.id, parent_id, walletchild.address, used FROM walletchild 
             INNER JOIN wallet ON walletchild.parent_id==wallet.id 
@@ -31,19 +31,19 @@ def get_walletchild_ids_join(address: str, siteid: int, profileid: int, db: Db):
 
 
 def get_wallet_raw_own(
-    address: str, site: Site, profileid: int, db: Db
+    db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address
     Returns the wallet_id, walletchild_id"""
 
-    res_wallet = get_wallet_id2(address, site.id, profileid, db)
+    res_wallet = get_wallet_id2(db, address, site.id, profileid)
     if len(res_wallet) > 1:
         raise DbError(
             f"Multiple wallets found with same address: {address} for site {site.name}"
         )
     if len(res_wallet) == 1:
         return (res_wallet[0][0], 0)
-    res_wchild = get_walletchild_ids_join(address, site.id, profileid, db)
+    res_wchild = get_walletchild_ids_join(db, address, site.id, profileid)
     if len(res_wchild) == 0:
         raise DbError(f"No wallets found with address: {address} for site {site.name}")
     if len(res_wchild) > 1:
@@ -54,12 +54,12 @@ def get_wallet_raw_own(
 
 
 def get_wallet_raw_notown(
-    address: str, site: Site, profileid: int, db: Db
+    db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address
     Returns the wallet_id, walletchild_id
     address is not owned and is added to/searched from the unknowns wallet"""
-    res_wallet = get_wallet_id_notowned(site.id, profileid, db)
+    res_wallet = get_wallet_id_notowned(db, site.id, profileid)
     if len(res_wallet) == 0:
         unknown_name = f"Unknowns {site.name}"
         insert_wallet_raw(
@@ -73,24 +73,24 @@ def get_wallet_raw_notown(
             haschild=True,
             db=db,
         )
-        res_wallet = get_wallet_id_notowned(site.id, profileid, db)
+        res_wallet = get_wallet_id_notowned(db, site.id, profileid)
     wallet_parent_id = res_wallet[0][0]
-    res_wchild = get_walletchild_id(address, wallet_parent_id, db)
+    res_wchild = get_walletchild_id(db, address, wallet_parent_id)
     if len(res_wchild) > 1:
         raise DbError(
             f"Multiple wallets found with same address: {address} for site {site.name}"
         )
     if len(res_wchild) == 0:
         insert_walletchild_raw(
-            parentid=wallet_parent_id, address=address, type=0, used=True, db=db
+            db=db, parentid=wallet_parent_id, address=address, type=0, used=True
         )
-        res_wchild = get_walletchild_id(address, wallet_parent_id, db)
+        res_wchild = get_walletchild_id(db, address, wallet_parent_id)
 
     return (wallet_parent_id, res_wchild[0][0])
 
 
 def process_and_insert_rawtransaction(
-    txn: TransactionRaw, profileid: int, site: Site, db: Db, chain: str = ""
+    db: Db, txn: TransactionRaw, profileid: int, site: Site, chain: str = ""
 ) -> bool:
     """Processing the raw transaction before inserting into db
 
@@ -102,7 +102,7 @@ def process_and_insert_rawtransaction(
     log.debug(
         f"Trying to insert a raw txn for profileid {profileid} and site {site.name} and chain {chain}: {txn}"
     )
-    txn_exists = check_transaction_exists(txn.txid, db)
+    txn_exists = check_transaction_exists(db, txn.txid)
     if txn_exists:
         # TODO: what if other profile has same transaction..., raise error?
         log.exception(f"Transaction already exist with same hash {txn.txid}")
@@ -119,27 +119,28 @@ def process_and_insert_rawtransaction(
     if txn.transactiontype == TransactionType.IN_UNDEFINED:
         # wallet to is this user
         fromwalletid, fromwalletchildid = get_wallet_raw_notown(
-            txn.from_wallet, site, profileid, db
+            db, txn.from_wallet, site, profileid
         )
         towalletid, towalletchildid = get_wallet_raw_own(
-            txn.to_wallet, site, profileid, db
+            db, txn.to_wallet, site, profileid
         )
     if txn.transactiontype == TransactionType.OUT_UNDEFINED:
         # wallet from is this user
         fromwalletid, fromwalletchildid = get_wallet_raw_own(
-            txn.from_wallet, site, profileid, db
+            db, txn.from_wallet, site, profileid
         )
         towalletid, towalletchildid = get_wallet_raw_notown(
-            txn.to_wallet, site, profileid, db
+            db, txn.to_wallet, site, profileid
         )
 
-    quoteassetid = get_asset_id(txn.quote_asset, db, chain)
+    quoteassetid = get_asset_id(db, txn.quote_asset, chain)
     baseassetid = (
-        None if txn.base_asset == "" else get_asset_id(txn.base_asset, db, chain)
+        None if txn.base_asset == "" else get_asset_id(db, txn.base_asset, chain)
     )
-    feeassetid = None if txn.fee_asset == "" else get_asset_id(txn.fee_asset, db, chain)
+    feeassetid = None if txn.fee_asset == "" else get_asset_id(db, txn.fee_asset, chain)
 
     result = insert_transaction_raw(
+        db=db,
         profileid=profileid,
         siteid=site.id,
         transactiontype=txn.transactiontype.value,
@@ -155,7 +156,6 @@ def process_and_insert_rawtransaction(
         quantity_cents=txn.quantity,
         fee_cents=txn.fee,
         note=txn.note,
-        db=db,
     )
     return result > 0
 

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-09
+@modified: 2023-08-10
 
 Controller for ArkFolio
 
@@ -54,9 +54,9 @@ class ArkfolioController:
         """Set to profile to name
         If doesn't exist yet, create new profile with this name
         """
-        if not check_profile_exists(name, self.db):
-            insert_profile(name, self.db)
-        self.profile = get_profile(name, self.db)
+        if not check_profile_exists(self.db, name):
+            insert_profile(self.db, name)
+        self.profile = get_profile(self.db, name)
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)
@@ -72,7 +72,7 @@ class ArkfolioController:
         )
         if addresstype != WalletAddressType.NORMAL:
             wallet.haschild = True
-        wallet_exists = check_wallet_exists(wallet, self.db)
+        wallet_exists = check_wallet_exists(self.db, wallet)
         if wallet_exists:
             log.info(
                 f"Wallet already exists with same site/chain and address: "

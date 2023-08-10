@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-09
+@modified: 2023-08-10
 
 Sitemodel for bitcoin blockchain
 
@@ -42,7 +42,7 @@ class Bitcoin(SiteModel):
         """Initialize asset bitcoin, BTC. No AssetOnSite necessary"""
         log.debug(f"Asset initialize for {self.site.name} with database")
         asset: Asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
-        insert_asset(asset, db)
+        insert_asset(db, asset)
 
     def check_address(self, address: str) -> WalletAddressType:
         """Check the validity of an address

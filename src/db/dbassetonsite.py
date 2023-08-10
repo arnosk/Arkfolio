@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-03
-@modified: 2023-07-04
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -15,8 +15,8 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_assetonsite(assetonsite: AssetOnSite, db: Db) -> None:
-    asset_exists = check_assetonsite_exists(assetonsite, db)
+def insert_assetonsite(db: Db, assetonsite: AssetOnSite) -> None:
+    asset_exists = check_assetonsite_exists(db, assetonsite)
     if asset_exists:
         raise DbError(
             f"Not allowed to create new asset on site with same name or symbol {assetonsite}"
@@ -32,15 +32,15 @@ def insert_assetonsite(assetonsite: AssetOnSite, db: Db) -> None:
     db.commit()
 
 
-def check_assetonsite_exists(assetonsite: AssetOnSite, db: Db) -> bool:
+def check_assetonsite_exists(db: Db, assetonsite: AssetOnSite) -> bool:
     """Checks if asset on site exists in db"""
-    result = get_assetonsite_ids(assetonsite, db)
+    result = get_assetonsite_ids(db, assetonsite)
     if len(result) == 0:
         return False
     return True
 
 
-def get_assetonsite_ids(assetonsite: AssetOnSite, db: Db):
+def get_assetonsite_ids(db: Db, assetonsite: AssetOnSite):
     query = (
         "SELECT id FROM assetonsite WHERE asset_id=? AND site_id=? AND id_on_site=?;"
     )

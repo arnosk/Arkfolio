@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-12
-@modified: 2023-07-22
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -16,8 +16,8 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_scrapingtxn(scrape: ScrapingTxn, db: Db) -> None:
-    scrape_exists = check_scrapingtxn_exists(scrape.wallet, db)
+def insert_scrapingtxn(db: Db, scrape: ScrapingTxn) -> None:
+    scrape_exists = check_scrapingtxn_exists(db, scrape.wallet)
     if scrape_exists:
         raise DbError(
             f"""Not allowed to create new scraping txn for 
@@ -35,8 +35,8 @@ def insert_scrapingtxn(scrape: ScrapingTxn, db: Db) -> None:
     db.commit()
 
 
-def insert_ignore_scrapingtxn(scrape: ScrapingTxn, db: Db) -> None:
-    scrape_exists = check_scrapingtxn_exists(scrape.wallet, db)
+def insert_ignore_scrapingtxn(db: Db, scrape: ScrapingTxn) -> None:
+    scrape_exists = check_scrapingtxn_exists(db, scrape.wallet)
     if scrape_exists:
         return
     query = """INSERT OR IGNORE INTO scrapingtxn 
@@ -52,9 +52,9 @@ def insert_ignore_scrapingtxn(scrape: ScrapingTxn, db: Db) -> None:
 
 
 def insert_ignore_scrapingtxn_raw(
-    walletid: int, db: Db, timestamp_start: int = 0, timestamp_end: int = 0
+    db: Db, walletid: int, timestamp_start: int = 0, timestamp_end: int = 0
 ) -> None:
-    scrape_exists = check_scrapingtxn_exists_raw(walletid, db)
+    scrape_exists = check_scrapingtxn_exists_raw(db, walletid)
     if scrape_exists:
         return
     query = """INSERT OR IGNORE INTO scrapingtxn 
@@ -69,9 +69,9 @@ def insert_ignore_scrapingtxn_raw(
     db.commit()
 
 
-def check_scrapingtxn_exists(wallet: Wallet, db: Db) -> bool:
+def check_scrapingtxn_exists(db: Db, wallet: Wallet) -> bool:
     """Checks if asset on site exists in db"""
-    result = get_scrapingtxn_ids(wallet.id, db)
+    result = get_scrapingtxn_ids(db, wallet.id)
     if len(result) == 0:
         return False
     if len(result) > 1:
@@ -82,9 +82,9 @@ def check_scrapingtxn_exists(wallet: Wallet, db: Db) -> bool:
     return True
 
 
-def check_scrapingtxn_exists_raw(walletid: int, db: Db) -> bool:
+def check_scrapingtxn_exists_raw(db: Db, walletid: int) -> bool:
     """Checks if asset on site exists in db"""
-    result = get_scrapingtxn_ids(walletid, db)
+    result = get_scrapingtxn_ids(db, walletid)
     if len(result) == 0:
         return False
     if len(result) > 1:
@@ -95,7 +95,7 @@ def check_scrapingtxn_exists_raw(walletid: int, db: Db) -> bool:
     return True
 
 
-def get_scrapingtxn_ids(walletid: int, db: Db):
+def get_scrapingtxn_ids(db: Db, walletid: int):
     query = """SELECT id, wallet_id, scrape_timestamp_start, scrape_timestamp_end 
             FROM scrapingtxn WHERE wallet_id=?;"""
     queryargs = (walletid,)
@@ -103,8 +103,8 @@ def get_scrapingtxn_ids(walletid: int, db: Db):
     return result
 
 
-def get_scrapingtxn_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
-    result = get_scrapingtxn_ids(wallet.id, db)
+def get_scrapingtxn_timestamp_end(db: Db, wallet: Wallet) -> Timestamp:
+    result = get_scrapingtxn_ids(db, wallet.id)
     if len(result) == 0:
         return Timestamp(0)
     if len(result) > 1:
@@ -115,11 +115,11 @@ def get_scrapingtxn_timestamp_end(wallet: Wallet, db: Db) -> Timestamp:
     return Timestamp(result[0][3])
 
 
-def update_scrapingtxn(scrape: ScrapingTxn, db: Db) -> None:
-    update_scrapingtxn_raw(scrape.scrape_timestamp_end, scrape.wallet.id, db)
+def update_scrapingtxn(db: Db, scrape: ScrapingTxn) -> None:
+    update_scrapingtxn_raw(db, scrape.scrape_timestamp_end, scrape.wallet.id)
 
 
-def update_scrapingtxn_raw(timestamp_end: int, walletid: int, db: Db) -> None:
+def update_scrapingtxn_raw(db: Db, timestamp_end: int, walletid: int) -> None:
     query = "UPDATE scrapingtxn SET scrape_timestamp_end=? WHERE wallet_id=?;"
     queryargs = (timestamp_end, walletid)
     db.execute(query, queryargs)

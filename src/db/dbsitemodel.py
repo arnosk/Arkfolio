@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-06-02
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -15,7 +15,7 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_sitemodel(site: Site, db: Db) -> None:
+def insert_sitemodel(db: Db, site: Site) -> None:
     query = """INSERT OR IGNORE INTO site 
             (id, name, sitetype_id, api, secret, hasprice, enabled) 
             VALUES (?,?,?,?,?,?,?);"""
@@ -32,7 +32,7 @@ def insert_sitemodel(site: Site, db: Db) -> None:
     db.commit()
 
 
-def get_sitemodel(id: int, db: Db) -> tuple:
+def get_sitemodel(db: Db, id: int) -> tuple:
     query = """SELECT id, name, sitetype_id, api, secret, hasprice, enabled 
             FROM site WHERE id = ?;"""
     result = db.query(query, (id,))
@@ -42,7 +42,7 @@ def get_sitemodel(id: int, db: Db) -> tuple:
     return result[0]
 
 
-def update_sitemodel(site: Site, db: Db) -> None:
+def update_sitemodel(db: Db, site: Site) -> None:
     query = "UPDATE site SET api=?, secret=?, hasprice=?, enabled=? WHERE id=?;"
     queryargs = (site.api, site.secret, site.hasprice, site.enabled, site.id)
     db.execute(query, queryargs)

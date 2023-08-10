@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-07-11
+@modified: 2023-08-10
 
 Database Handler Class
 
@@ -15,13 +15,13 @@ from src.errors.dberrors import DbError
 log = logging.getLogger(__name__)
 
 
-def insert_asset(asset: Asset, db: Db) -> None:
-    symbol_exists = check_symbol_exists(asset, db)
+def insert_asset(db: Db, asset: Asset) -> None:
+    symbol_exists = check_symbol_exists(db, asset)
     if symbol_exists:
         raise DbError(
             f"Not allowed to create new asset with same symbol and different name: {asset}"
         )
-    asset_exists = check_asset_exists(asset, db)
+    asset_exists = check_asset_exists(db, asset)
     if asset_exists:
         # TODO: raise error?
         log.error(f"Skipping insert, Asset already exists in db {asset}")
@@ -32,7 +32,7 @@ def insert_asset(asset: Asset, db: Db) -> None:
     db.commit()
 
 
-def check_symbol_exists(asset: Asset, db: Db) -> bool:
+def check_symbol_exists(db: Db, asset: Asset) -> bool:
     """Checks if asset symbol exists with different name in db"""
     query = "SELECT id FROM asset WHERE name<>? AND symbol=? AND chain=?;"
     queryargs = (asset.name, asset.symbol, asset.chain)
@@ -42,16 +42,16 @@ def check_symbol_exists(asset: Asset, db: Db) -> bool:
     return True
 
 
-def check_asset_exists(asset: Asset, db: Db) -> bool:
+def check_asset_exists(db: Db, asset: Asset) -> bool:
     """Checks if asset exists in db"""
-    result = get_asset_ids(asset.symbol, db, asset.chain)
+    result = get_asset_ids(db, asset.symbol, asset.chain)
     if len(result) == 0:
         return False
     return True
 
 
-def get_asset_id(name: str, db: Db, chain: str = "") -> int:
-    result = get_asset_ids(name, db, chain)
+def get_asset_id(db: Db, name: str, chain: str = "") -> int:
+    result = get_asset_ids(db, name, chain)
     if len(result) == 0:
         raise DbError(f"No asset found {name} on chain {chain}")
     if len(result) > 1:
@@ -59,14 +59,14 @@ def get_asset_id(name: str, db: Db, chain: str = "") -> int:
     return result[0][0]
 
 
-def get_asset_ids(name: str, db: Db, chain: str = ""):
+def get_asset_ids(db: Db, name: str, chain: str = ""):
     query = "SELECT id FROM asset WHERE (name=? OR symbol=?) AND chain=?;"
     queryargs = (name, name, chain)
     result = db.query(query, queryargs)
     return result
 
 
-def get_asset(id: int, db: Db) -> Asset:
+def get_asset(db: Db, id: int) -> Asset:
     query = "SELECT id, name, symbol, decimal_places, chain FROM asset WHERE id=?;"
     queryargs = (id,)
     result = db.query(query, queryargs)
