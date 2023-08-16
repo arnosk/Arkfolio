@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-10
+@modified: 2023-08-16
 
 Abstract class for all sites
 
@@ -12,9 +12,9 @@ The settings can be changed by user in Database, but must be initialized
 import logging
 from abc import ABC, abstractmethod
 
-from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet
+from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet, WalletChild
 from src.data.dbschematypes import WalletAddressType
-from src.data.types import Timestamp
+from src.data.types import Timestamp, TransactionInfo
 from src.db.db import Db
 from src.db.dbscrapingtxn import (
     get_scrapingtxn_timestamp_end,
@@ -87,6 +87,11 @@ class SiteModel(ABC):
             f"Site model {self.__class__.__name__} doesn't have transactions"
         )
 
+    def get_transaction_info(self, addresses: list[str]) -> list[TransactionInfo]:
+        raise NotImplementedError(
+            f"Site model {self.__class__.__name__} doesn't have transactions"
+        )
+
     def get_price(self) -> list[Price]:
         if not self.site.hasprice:
             raise NotImplementedError(
@@ -102,3 +107,6 @@ class SiteModel(ABC):
     def convert_asset_to_own(self, assetname: str) -> str:
         """Converting assetname on site to the assetname used in this program"""
         return assetname
+
+    def get_new_child_addresses(self, db: Db, wallet: Wallet) -> list[WalletChild]:
+        return []

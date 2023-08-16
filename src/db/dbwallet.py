@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-08-10
+@modified: 2023-08-16
 
 Database Handler Class
 
@@ -125,11 +125,23 @@ def get_all_active_wallets(db: Db) -> list:
 
 
 def get_wallet_id2(db: Db, address: str, siteid: int, profileid: int):
-    """Get wallet from db, for specific address and site and profile"""
+    """Get wallet id from db, for specific address and site and profile"""
     query = "SELECT id FROM wallet WHERE profile_id=? AND site_id=? AND address=?;"
     queryargs = (profileid, siteid, address)
     result = db.query(query, queryargs)
     return result
+
+
+def get_wallet_id2_one(db: Db, address: str, siteid: int, profileid: int) -> int:
+    """Get only one wallet id from db, for specific address and site and profile"""
+    result = get_wallet_id2(db, address, siteid, profileid)
+    if len(result) > 1:
+        raise DbError(
+            f"Multiple wallets found with same address: {address} for site {siteid}"
+        )
+    if len(result) < 1:
+        return 0
+    return result[0][0]
 
 
 def get_wallet_id_notowned(db: Db, siteid: int, profileid: int):

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-08-10
+@modified: 2023-08-16
 
 Database Handler Class
 
@@ -9,6 +9,7 @@ Database Handler Class
 import logging
 
 from src.data.dbschemadata import WalletChild
+from src.data.dbschematypes import ChildAddressType
 from src.db.db import Db
 from src.errors.dberrors import DbError
 
@@ -84,9 +85,9 @@ def get_walletchilds(db: Db, parentid: int) -> list:
         "SELECT id, parent_id, address, type, used FROM walletchild WHERE parent_id=?;"
     )
     result = db.query(query, (parentid,))
-    log.debug(f"Record of walletchild in database: {result}")
+    log.debug(f"Record of wallet child in database: {result}")
     if len(result) == 0:
-        log.info(f"No records found of a wallet in database")
+        log.info(f"No records found of a wallet child in database")
     return result
 
 
@@ -96,3 +97,17 @@ def get_walletchild_addresses(db: Db, parentid: int) -> list[str]:
     for res in result:
         addresses.append(res[2])
     return addresses
+
+
+def get_walletchildtypes(db: Db, parentid: int, type: ChildAddressType) -> list:
+    query = "SELECT id, parent_id, address, type, used FROM walletchild WHERE parent_id=? AND type=?;"
+    result = db.query(query, (parentid, type.value))
+    log.debug(f"Record of wallet child in database: {result}")
+    if len(result) == 0:
+        log.debug(f"No records found of a wallet child in database")
+    return result
+
+
+def get_nr_walletchildtypes(db: Db, parentid: int, type: ChildAddressType) -> int:
+    result = get_walletchildtypes(db, parentid, type)
+    return len(result)

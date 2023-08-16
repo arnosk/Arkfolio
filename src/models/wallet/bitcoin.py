@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-10
+@modified: 2023-08-16
 
 Sitemodel for bitcoin blockchain
 
@@ -9,15 +9,22 @@ Sitemodel for bitcoin blockchain
 import logging
 import time
 
-from pycoin.symbols.btc import network  # type: ignore
+from pycoin.networks.registry import network_for_netcode  # type: ignore
 
 import config
-from src.data.dbschemadata import Asset, Site, TransactionRaw
-from src.data.dbschematypes import SiteType, TransactionType, WalletAddressType
-from src.data.types import Timestamp
+from src.data.dbschemadata import Asset, Site, TransactionRaw, Wallet, WalletChild
+from src.data.dbschematypes import (
+    ChildAddressType,
+    SiteType,
+    TransactionType,
+    WalletAddressType,
+)
+from src.data.types import Timestamp, TransactionInfo
 from src.db.db import Db
 from src.db.dbasset import insert_asset
-from src.errors.modelerrors import WalletAddressTypeError
+from src.db.dbwalletchild import get_nr_walletchildtypes
+from src.errors.dberrors import DbError
+from src.errors.modelerrors import ChildAddressTypeError, WalletAddressTypeError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.req.requesthelper import request_get_dict
@@ -48,6 +55,7 @@ class Bitcoin(SiteModel):
         """Check the validity of an address
         0 = incorrect, 1 = normal address,
         2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
+        network = network_for_netcode("BTC")
         if network.parse.address(address):
             log.debug(f"Validating result: address - {address}")
             return WalletAddressType.NORMAL
@@ -66,65 +74,103 @@ class Bitcoin(SiteModel):
         log.debug(f"Validating result: invalid address - {address}")
         return WalletAddressType.INVALID
 
-    def get_child_address(self, pub: str, type: WalletAddressType) -> str:
-        if type == WalletAddressType.NORMAL or type == WalletAddressType.INVALID:
+    def get_new_child_addresses(
+        # self, db: Db, parentid: int, pub: str, wallettype: WalletAddressType
+        self,
+        db: Db,
+        wallet: Wallet,
+    ) -> list[WalletChild]:
+        if (
+            wallet.addresstype == WalletAddressType.NORMAL
+            or wallet.addresstype == WalletAddressType.INVALID
+        ):
             raise WalletAddressTypeError(
-                f"Wallet address type must be a master public key type: {pub} - {type}"
+                f"Wallet address type must be a master public key type: {wallet}"
             )
 
-        # TODO: distinguish child address by childaddresstype: receiving vs change for bitcoin
-        # TODO: add column in chlld address table
-        # TODO: get nr of existing child addresses in db for receiving and change address
-        # TODO: per child address type, calculate next child address
-        # TODO: check if the nr of transactions, if greater than 0, add to child address table
-        # TODO: repeat until nr of tx is 0 for every child address type, also add this to db
+        address_receiving = self._get_new_child_addresses(
+            db=db,
+            wallet=wallet,
+            childtype=ChildAddressType.RECEIVING,
+        )
+        address_change = self._get_new_child_addresses(
+            db=db,
+            wallet=wallet,
+            childtype=ChildAddressType.CHANGE,
+        )
+
         # TODO: in server, when checking txs, also calculate next child address and check on txs
+        # TODO: Add childwallet or add to list to return and insert somewhere else
+        return address_receiving + address_change
 
-        if type == WalletAddressType.ELECTRUM:
-            wallet = network.parse.electrum_pub("E:" + pub)
-            if wallet == None:
-                raise WalletAddressTypeError(
-                    f"Public key is not an electrum mpk: {pub} - {type}"
-                )
-            for key in wallet.subkeys("0-4/0-1"):
-                log.debug(f"loop:  {key.address()}")
-            # receiving addresses
-            log.debug(f"{wallet.subkey('0/0').address()}")
-            log.debug(f"{wallet.subkey('1/0').address()}")
-            log.debug(f"{wallet.subkey('2/0').address()}")
-            log.debug(f"{wallet.subkey('3/0').address()}")
-            # change addresses
-            log.debug(f"{wallet.subkey('0/1').address()}")
-            log.debug(f"{wallet.subkey('1/1').address()}")
-            log.debug(f"{wallet.subkey('2/1').address()}")
-            log.debug(f"{wallet.subkey('3/1').address()}")
-            return wallet.subkey("0/0").address()
-        # else:
-        wallet = None
-        if type == WalletAddressType.XPUB:
-            wallet = network.parse.bip32_pub(pub)
-        if type == WalletAddressType.YPUB:
-            wallet = network.parse.bip49_pub(pub)
-        if type == WalletAddressType.ZPUB:
-            wallet = network.parse.bip84_pub(pub)
-
-        if wallet == None:
-            raise WalletAddressTypeError(
-                f"Public key or addresstype is not a correct: {pub} - {type}"
+    def _get_new_child_addresses(
+        self,
+        db: Db,
+        wallet: Wallet,
+        childtype: ChildAddressType,
+    ) -> list[WalletChild]:
+        if childtype != ChildAddressType.RECEIVING:
+            ca_code = 0
+        elif childtype != ChildAddressType.CHANGE:
+            ca_code = 1
+        else:
+            raise ChildAddressTypeError(
+                f"Child address type must be RECEIVING or CHANGE: {wallet} - {childtype}"
             )
-        for key in wallet.subkeys("0-1/0-4"):
-            log.debug(f"loop:  {key.address()}")
-        # receiving addresses
-        log.debug(f"{wallet.subkey(0).subkey(0).address()}")
-        log.debug(f"{wallet.subkey(0).subkey(1).address()}")
-        log.debug(f"{wallet.subkey(0).subkey(2).address()}")
-        log.debug(f"{wallet.subkey(0).subkey(3).address()}")
-        # change addresses
-        log.debug(f"{wallet.subkey(1).subkey(0).address()}")
-        log.debug(f"{wallet.subkey(1).subkey(1).address()}")
-        log.debug(f"{wallet.subkey(1).subkey(2).address()}")
-        log.debug(f"{wallet.subkey(1).subkey(3).address()}")
-        return wallet.subkey(0).subkey(0).address()
+
+        # Get amount of existing child addresses in db for receiving or change address
+        batch_start = get_nr_walletchildtypes(db, wallet.id, childtype)
+        batch_size = config.CHILD_ADDRESS_BATCH_SIZE
+        network = network_for_netcode(
+            "BTC"
+        )  # TODO: bring in general place, is also used above, make bitcoin kind of module
+        childwallets: list[WalletChild] = []
+        check_new_txs = True
+        while check_new_txs:
+            addresses: list[str] = []
+            if wallet.addresstype == WalletAddressType.ELECTRUM:
+                k = network.parse.electrum_pub("E:" + wallet.address)
+                if k == None:
+                    raise WalletAddressTypeError(
+                        f"Public key is not an electrum mpk: {wallet}"
+                    )
+                for key in k.subkeys(
+                    f"{batch_start}-{batch_start+batch_size}/{ca_code}"
+                ):
+                    addresses.append(key.address())
+            else:
+                k = None
+                if wallet.addresstype == WalletAddressType.XPUB:
+                    k = network.parse.bip32_pub(wallet.address)
+                if wallet.addresstype == WalletAddressType.YPUB:
+                    k = network.parse.bip49_pub(wallet.address)
+                if wallet.addresstype == WalletAddressType.ZPUB:
+                    k = network.parse.bip84_pub(wallet.address)
+
+                if k == None:
+                    raise WalletAddressTypeError(
+                        f"Public key or addresstype is not a correct: {wallet}"
+                    )
+                for key in k.subkeys(
+                    f"{ca_code}/{batch_start}-{batch_start+batch_size}"
+                ):
+                    addresses.append(key.address())
+
+            txs_info = self.get_transaction_info(addresses)
+
+            # Check if addresses have txs and repeat if they do
+            check_new_txs = False
+            for txinfo in txs_info:
+                childwallet = WalletChild(
+                    parent=wallet, used=True, address=txinfo.address, type=childtype
+                )
+                childwallets.append(childwallet)
+                print(f"Found tx info for {wallet.address:.10}: {txinfo}")
+                if txinfo.nr_txs != 0:
+                    # Check new transactions, stay in while loop
+                    check_new_txs = True
+            batch_start = batch_start + batch_size
+        return childwallets
 
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)
@@ -132,6 +178,37 @@ class Bitcoin(SiteModel):
         log.debug(f"Start getting transactions for {self.site.name}")
         result = _get_transactions_blockchaininfo(addresses, last_time)
         return result
+
+    def get_transaction_info(self, addresses: list[str]) -> list[TransactionInfo]:
+        log.debug(f"Start getting transaction info for {self.site.name}")
+        result = _get_transaction_info_blockchaininfo(addresses)
+        return result
+
+
+def _get_transaction_info_blockchaininfo(addresses: list[str]) -> list[TransactionInfo]:
+    """May raise RemoteError or KeyError
+    Order is same
+    """
+    addresses_str = "|".join(addresses)
+    nr_txs: list[TransactionInfo] = []
+    backoff = config.BLOCKCHAININFO_BACKOFF
+    resp = request_get_dict(
+        url=f"https://blockchain.info/balance?active={addresses_str}",
+        handle_429=True,
+        backoff_in_seconds=backoff,
+    )
+    for address in addresses:
+        tx = resp[address]
+        txinfo = TransactionInfo(
+            address=address,
+            nr_txs=tx["n_tx"],
+            final_balance=tx["final_balance"],
+            total_received=tx["total_received"],
+        )
+        nr_txs.append(txinfo)
+    log.info(f"Limiting requests to 1 query per {backoff} seconds")
+    time.sleep(backoff)
+    return nr_txs
 
 
 def _get_transactions_blockchaininfo(

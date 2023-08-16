@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-10
+@modified: 2023-08-16
 
 Helper functions for Server
 
@@ -13,7 +13,11 @@ from src.data.dbschematypes import TransactionType
 from src.db.db import Db
 from src.db.dbasset import get_asset_id
 from src.db.dbtransaction import check_transaction_exists, insert_transaction_raw
-from src.db.dbwallet import get_wallet_id2, get_wallet_id_notowned, insert_wallet_raw
+from src.db.dbwallet import (
+    get_wallet_id2_one,
+    get_wallet_id_notowned,
+    insert_wallet_raw,
+)
 from src.db.dbwalletchild import get_walletchild_id, insert_walletchild_raw
 from src.errors.dberrors import DbError
 
@@ -34,15 +38,14 @@ def get_wallet_raw_own(
     db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address
-    Returns the wallet_id, walletchild_id"""
+    Returns the (wallet_id, walletchild_id)"""
 
-    res_wallet = get_wallet_id2(db, address, site.id, profileid)
-    if len(res_wallet) > 1:
-        raise DbError(
-            f"Multiple wallets found with same address: {address} for site {site.name}"
-        )
-    if len(res_wallet) == 1:
-        return (res_wallet[0][0], 0)
+    # search wallet addresses
+    walletid = get_wallet_id2_one(db, address, site.id, profileid)
+    if walletid > 0:
+        return (walletid, 0)
+
+    # search child addresses
     res_wchild = get_walletchild_ids_join(db, address, site.id, profileid)
     if len(res_wchild) == 0:
         raise DbError(f"No wallets found with address: {address} for site {site.name}")
