@@ -15,6 +15,7 @@ from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, get_wallet_id2_one, insert_wallet
+from src.db.dbwalletchild import insert_walletchild
 from src.errors.dberrors import DbError
 from src.models.sitemodel import SiteModel
 from src.srv.arkfolioserver import ArkfolioServer
@@ -107,4 +108,8 @@ class ArkfolioController:
                 f"No wallet found with address: {address} for site {sitemodel.site.name}"
             )
         wallet.id = parentid
-        childaddresses = sitemodel.get_new_child_addresses(self.db, wallet)
+        childwallets = sitemodel.get_new_child_addresses(self.db, wallet)
+        for child in childwallets:
+            insert_walletchild(self.db, child)
+
+        # TODO: in server, when checking txs, also calculate next child address and check on txs

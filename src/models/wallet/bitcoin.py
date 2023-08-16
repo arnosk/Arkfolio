@@ -98,9 +98,6 @@ class Bitcoin(SiteModel):
             wallet=wallet,
             childtype=ChildAddressType.CHANGE,
         )
-
-        # TODO: in server, when checking txs, also calculate next child address and check on txs
-        # TODO: Add childwallet or add to list to return and insert somewhere else
         return address_receiving + address_change
 
     def _get_new_child_addresses(
