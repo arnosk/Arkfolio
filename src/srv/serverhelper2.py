@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-16
+@modified: 2023-08-18
 
 Helper functions for Server
 
@@ -13,11 +13,7 @@ from src.data.dbschematypes import TransactionType
 from src.db.db import Db
 from src.db.dbasset import get_asset_id
 from src.db.dbtransaction import check_transaction_exists, insert_transaction_raw
-from src.db.dbwallet import (
-    get_wallet_id2_one,
-    get_wallet_id_notowned,
-    insert_wallet_raw,
-)
+from src.db.dbwallet import get_one_wallet_id, get_wallet_id_notowned, insert_wallet_raw
 from src.db.dbwalletchild import get_walletchild_id, insert_walletchild_raw
 from src.errors.dberrors import DbError
 
@@ -41,7 +37,7 @@ def get_wallet_raw_own(
     Returns the (wallet_id, walletchild_id)"""
 
     # search wallet addresses
-    walletid = get_wallet_id2_one(db, address, site.id, profileid)
+    walletid = get_one_wallet_id(db, address, site.id, profileid)
     if walletid > 0:
         return (walletid, 0)
 
@@ -161,31 +157,3 @@ def process_and_insert_rawtransaction(
         note=txn.note,
     )
     return result > 0
-
-    # query = """INSERT OR IGNORE INTO transactions
-    #                 (profile_id, site_id, transactiontype_id, timestamp, txid,
-    #                  from_wallet_id, from_walletchild_id,
-    #                  to_wallet_id, to_walletchild_id,
-    #                  quote_asset_id, base_asset_id, fee_asset_id,
-    #                  quantity, fee, note)
-    #             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"""
-    # queryargs = (
-    #     profileid,
-    #     site.id,
-    #     txn.transactiontype.value,
-    #     txn.timestamp,
-    #     txn.txid,
-    #     fromwalletid,
-    #     None if fromwalletchildid == 0 else fromwalletchildid,
-    #     towalletid,
-    #     None if towalletchildid == 0 else towalletchildid,
-    #     quoteassetid,
-    #     baseassetid,
-    #     feeassetid,
-    #     txn.quantity,
-    #     txn.fee,
-    #     txn.note,
-    # )
-    # result = db.execute(query, queryargs)
-    # db.commit()
-    # return result > 0

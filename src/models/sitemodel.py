@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-16
+@modified: 2023-08-18
 
 Abstract class for all sites
 
@@ -22,7 +22,8 @@ from src.db.dbscrapingtxn import (
     update_scrapingtxn_raw,
 )
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.db.dbwalletchild import get_walletchild_addresses
+from src.db.dbwalletchild import get_walletchild_addresses, insert_walletchild
+from src.errors.modelerrors import WalletIdError
 from src.srv.serverhelper2 import process_and_insert_rawtransaction
 
 log = logging.getLogger(__name__)
@@ -47,21 +48,24 @@ class SiteModel(ABC):
         self.site.enabled = site[6]
         log.debug(f"Init of sitemodel ready {self.site}")
 
-    def asset_dbinit(self, db: Db) -> None:
-        """Initialization the assets used by this site model in database"""
-        log.debug(f"No Asset initialize for {self.site.name} with database")
+    def set_api_secret(self, db: Db, api: str, secret: str) -> None:
+        self.site.api = api
+        self.site.secret = secret
+        update_sitemodel(db, self.site)
 
-    def check_address(self, address: str) -> WalletAddressType:
-        """Check the validity of an address
-        0 = incorrect, 1 = normal address,
-        2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
-        log.debug(f"No check for {self.site.name} address")
-        return WalletAddressType.INVALID
+    def search_transactions(self, db: Db, wallet: Wallet) -> None:
+        log.debug(f"Check for new transactions {self.site.name}-{wallet.address}")
+        if wallet.addresstype == WalletAddressType.INVALID:
+            logging.info(
+                f"no searching txs for invalid wallet: {self.site.name}-{wallet.address}"
+            )
+            return
+        if wallet.haschild:
+            self.check_for_new_childwallets(db, wallet)
+        self._search_transactions(db, wallet)
 
-    def search_transactions(self, wallet: Wallet, db: Db) -> None:
-        log.debug(
-            f"Start searching transactions for {wallet.address} on {self.site.name}"
-        )
+    def _search_transactions(self, db: Db, wallet: Wallet) -> None:
+        log.debug(f"Start searching transactions for {self.site.name}-{wallet.address}")
         if wallet.haschild:
             addresses = get_walletchild_addresses(db, wallet.id)
         else:
@@ -80,6 +84,31 @@ class SiteModel(ABC):
                 update_scrapingtxn_raw(db, txn.timestamp + 1, wallet.id)
         return
 
+    def check_for_new_childwallets(self, db: Db, wallet: Wallet):
+        log.debug(f"Check for new child wallets {self.site.name}-{wallet.address}")
+        if wallet.id == 0:
+            raise WalletIdError(f"No id in structure for wallet: {wallet}")
+        childwallets = self.get_new_child_addresses(db, wallet)
+        for child in childwallets:
+            insert_walletchild(db, child)
+        for child in childwallets:
+            log.debug(
+                f"New child address: {child.address} - {child.type} - {child.parent.addresstype} - {child.parent.address:.10}"
+            )
+
+    ### From here to be Implemented in new sitemodel
+
+    def asset_dbinit(self, db: Db) -> None:
+        """Initialization the assets used by this site model in database"""
+        log.debug(f"No Asset initialize for {self.site.name} with database")
+
+    def check_address(self, address: str) -> WalletAddressType:
+        """Check the validity of an address
+        0 = incorrect, 1 = normal address,
+        2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
+        log.debug(f"No check for {self.site.name} address")
+        return WalletAddressType.INVALID
+
     def get_transactions(
         self, addresses: list[str], last_time: Timestamp = Timestamp(0)
     ) -> list[TransactionRaw]:
@@ -92,6 +121,9 @@ class SiteModel(ABC):
             f"Site model {self.__class__.__name__} doesn't have transactions"
         )
 
+    def get_new_child_addresses(self, db: Db, wallet: Wallet) -> list[WalletChild]:
+        return []
+
     def get_price(self) -> list[Price]:
         if not self.site.hasprice:
             raise NotImplementedError(
@@ -99,14 +131,7 @@ class SiteModel(ABC):
             )
         return []
 
-    def set_api_secret(self, db: Db, api: str, secret: str) -> None:
-        self.site.api = api
-        self.site.secret = secret
-        update_sitemodel(db, self.site)
-
     def convert_asset_to_own(self, assetname: str) -> str:
-        """Converting assetname on site to the assetname used in this program"""
+        """Converting assetname on info site to the assetname used in this program
+        Every site uses its own handle for an asset"""
         return assetname
-
-    def get_new_child_addresses(self, db: Db, wallet: Wallet) -> list[WalletChild]:
-        return []

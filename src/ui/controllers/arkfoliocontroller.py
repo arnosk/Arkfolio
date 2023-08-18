@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-16
+@modified: 2023-08-18
 
 Controller for ArkFolio
 
@@ -14,8 +14,7 @@ from src.data.dbschemadata import Profile, Wallet
 from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
-from src.db.dbwallet import check_wallet_exists, get_wallet_id2_one, insert_wallet
-from src.db.dbwalletchild import insert_walletchild
+from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
 from src.errors.dberrors import DbError
 from src.models.sitemodel import SiteModel
 from src.srv.arkfolioserver import ArkfolioServer
@@ -80,27 +79,15 @@ class ArkfolioController:
                 f"Wallet already exists with same site/chain and address: "
                 f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
             )
-            #### temp
-            if addresstype == WalletAddressType.NORMAL:
-                return
-            parentid = get_wallet_id2_one(
-                self.db, address, sitemodel.site.id, self.profile.id
-            )
-            wallet.id = parentid
-            childaddresses = sitemodel.get_new_child_addresses(
-                db=self.db,
-                wallet=wallet,
-            )
-            #### end temp
             return
 
         insert_wallet(self.db, wallet)
 
-        if addresstype == WalletAddressType.NORMAL:
+        if not wallet.haschild:
             return
 
         # calcultate child addresses for public address
-        parentid = get_wallet_id2_one(
+        parentid = get_one_wallet_id(
             self.db, address, sitemodel.site.id, self.profile.id
         )
         if parentid == 0:
@@ -108,8 +95,4 @@ class ArkfolioController:
                 f"No wallet found with address: {address} for site {sitemodel.site.name}"
             )
         wallet.id = parentid
-        childwallets = sitemodel.get_new_child_addresses(self.db, wallet)
-        for child in childwallets:
-            insert_walletchild(self.db, child)
-
-        # TODO: in server, when checking txs, also calculate next child address and check on txs
+        sitemodel.check_for_new_childwallets(self.db, wallet)

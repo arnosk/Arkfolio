@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-16
+@modified: 2023-08-18
 
 Sitemodel for bitcoin blockchain
 
@@ -23,7 +23,6 @@ from src.data.types import Timestamp, TransactionInfo
 from src.db.db import Db
 from src.db.dbasset import insert_asset
 from src.db.dbwalletchild import get_nr_walletchildtypes
-from src.errors.dberrors import DbError
 from src.errors.modelerrors import ChildAddressTypeError, WalletAddressTypeError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
@@ -107,21 +106,23 @@ class Bitcoin(SiteModel):
         childtype: ChildAddressType,
     ) -> list[WalletChild]:
         if childtype != ChildAddressType.RECEIVING:
-            ca_code = 0
-        elif childtype != ChildAddressType.CHANGE:
             ca_code = 1
+        elif childtype != ChildAddressType.CHANGE:
+            ca_code = 0
         else:
             raise ChildAddressTypeError(
                 f"Child address type must be RECEIVING or CHANGE: {wallet} - {childtype}"
             )
-
         # Get amount of existing child addresses in db for receiving or change address
         batch_start = get_nr_walletchildtypes(db, wallet.id, childtype)
         batch_size = config.CHILD_ADDRESS_BATCH_SIZE
+        log.debug(f"Start get new child address for: {childtype} - {wallet.address}")
+        log.debug(f"Starting batch from {batch_start}")
         network = network_for_netcode(
             "BTC"
         )  # TODO: bring in general place, is also used above, make bitcoin kind of module
         childwallets: list[WalletChild] = []
+        childzero: list[WalletChild] = []
         check_new_txs = True
         while check_new_txs:
             addresses: list[str] = []
@@ -152,8 +153,13 @@ class Bitcoin(SiteModel):
                     f"{ca_code}/{batch_start}-{batch_start+batch_size}"
                 ):
                     addresses.append(key.address())
-
             txs_info = self.get_transaction_info(addresses)
+
+            print(
+                f"addresses from batch start: {batch_start}, {childtype}, {wallet.addresstype}"
+            )
+            for a in addresses:
+                print(f"address: {a}")
 
             # Check if addresses have txs and repeat if they do
             check_new_txs = False
@@ -161,12 +167,21 @@ class Bitcoin(SiteModel):
                 childwallet = WalletChild(
                     parent=wallet, used=True, address=txinfo.address, type=childtype
                 )
-                childwallets.append(childwallet)
-                print(f"Found tx info for {wallet.address:.10}: {txinfo}")
-                if txinfo.nr_txs != 0:
+                log.debug(
+                    f"Found tx info for {wallet.address:.10}: "
+                    f"{txinfo.address}, nr txs: {txinfo.nr_txs}, "
+                    f"received: {txinfo.total_received}, balance: {txinfo.final_balance}"
+                )
+                if txinfo.nr_txs == 0:
+                    childzero.append(childwallet)
+                else:
+                    if len(childzero) != 0:
+                        childwallets = childwallets + childzero
+                        childzero.clear()
+                    childwallets.append(childwallet)
                     # Check new transactions, stay in while loop
                     check_new_txs = True
-            batch_start = batch_start + batch_size
+            batch_start = batch_start + batch_size + 1
         return childwallets
 
     def get_transactions(
@@ -255,7 +270,6 @@ def _get_transactions_blockchaininfo(
                     break
 
                 for input in tx["inputs"]:
-                    # print(f"input: {input}")
                     address_from = input["prev_out"]["addr"]
                     if address_from == acc:
                         tx_type = TransactionType.OUT_UNDEFINED
@@ -263,7 +277,6 @@ def _get_transactions_blockchaininfo(
                         tx_value = input["value"]
 
                 for output in tx["out"]:
-                    # print(f"output {output}")
                     addr = output.get("addr", "unknown")
                     if addr == acc:
                         tx_type = TransactionType.IN_UNDEFINED

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-09
+@modified: 2023-08-18
 
 Server for ArkFolio
 
@@ -50,7 +50,7 @@ class ArkfolioServer:
                 # TODO: Check public wallets for new child address
                 try:
                     # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
-                    self.sitemodels[siteid].search_transactions(wallet, self.db)
+                    self.sitemodels[siteid].search_transactions(self.db, wallet)
                 except (DbError, RequestException) as e:
                     log.exception(f"Error: {e}")
 
