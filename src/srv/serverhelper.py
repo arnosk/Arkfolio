@@ -9,6 +9,7 @@ Helper functions for Server
 import logging
 
 from src.data.dbschemadata import Profile, Wallet
+from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbwallet import get_all_active_wallets
 from src.models.sitemodel import SiteModel
@@ -37,7 +38,7 @@ def get_wallets_per_site(
                 id=rawdata[0],
                 name=rawdata[3],
                 address=rawdata[4],
-                addresstype=rawdata[5],
+                addresstype=WalletAddressType(rawdata[5]),
                 owned=rawdata[6],
                 enabled=rawdata[7],
                 haschild=rawdata[8],

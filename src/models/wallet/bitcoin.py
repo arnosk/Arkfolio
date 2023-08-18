@@ -54,7 +54,9 @@ class Bitcoin(SiteModel):
         """Check the validity of an address
         0 = incorrect, 1 = normal address,
         2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
-        network = network_for_netcode("BTC")
+        network = network_for_netcode(
+            "BTC"
+        )  # TODO: bring in general place, is also used below, make bitcoin kind of module
         if network.parse.address(address):
             log.debug(f"Validating result: address - {address}")
             return WalletAddressType.NORMAL
@@ -140,9 +142,9 @@ class Bitcoin(SiteModel):
                 k = None
                 if wallet.addresstype == WalletAddressType.XPUB:
                     k = network.parse.bip32_pub(wallet.address)
-                if wallet.addresstype == WalletAddressType.YPUB:
+                elif wallet.addresstype == WalletAddressType.YPUB:
                     k = network.parse.bip49_pub(wallet.address)
-                if wallet.addresstype == WalletAddressType.ZPUB:
+                elif wallet.addresstype == WalletAddressType.ZPUB:
                     k = network.parse.bip84_pub(wallet.address)
 
                 if k == None:
@@ -260,6 +262,8 @@ def _get_transactions_blockchaininfo(
                 address_from = ""
                 address_to = ""
                 tx_time = tx["time"]
+
+                log.debug(f"Tx {tx_i}: {tx}")
 
                 if tx_time <= int(last_time):
                     log.debug(
