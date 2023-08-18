@@ -56,8 +56,8 @@ class SiteModel(ABC):
     def search_transactions(self, db: Db, wallet: Wallet) -> None:
         log.debug(f"Check for new transactions {self.site.name}-{wallet.address}")
         if wallet.addresstype == WalletAddressType.INVALID:
-            logging.info(
-                f"no searching txs for invalid wallet: {self.site.name}-{wallet.address}"
+            logging.exception(
+                f"Not searching txs for invalid wallet: {self.site.name}-{wallet.address}"
             )
             return
         if wallet.haschild:
