@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-06-03
-@modified: 2023-07-10
+@modified: 2023-07-18
 
 Helper functions for Server
 
@@ -37,7 +37,10 @@ def get_wallets_per_site(
                 id=rawdata[0],
                 name=rawdata[3],
                 address=rawdata[4],
-                haschild=rawdata[7],
+                addresstype=rawdata[5],
+                owned=rawdata[6],
+                enabled=rawdata[7],
+                haschild=rawdata[8],
             )
             wallets.setdefault(siteid, []).append(wallet)
     return wallets

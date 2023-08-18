@@ -132,7 +132,7 @@ def get_wallet(db: Db, id: int) -> tuple:
 
 
 def get_all_wallets(db: Db) -> list:
-    query = """SELECT id, site_id, profile_id, name, address, owned, enabled, haschild 
+    query = """SELECT id, site_id, profile_id, name, address, addresstype, owned, enabled, haschild 
             FROM wallet"""
     result = db.query(query)
     log.debug(f"Record of wallets in database: {result}")
@@ -142,7 +142,7 @@ def get_all_wallets(db: Db) -> list:
 
 
 def get_all_active_wallets(db: Db) -> list:
-    query = """SELECT id, site_id, profile_id, name, address, owned, enabled, haschild 
+    query = """SELECT id, site_id, profile_id, name, address, addresstype, owned, enabled, haschild 
             FROM wallet WHERE enabled=true AND owned=true"""
     result = db.query(query)
     log.debug(f"Record of wallets in database: {result}")
