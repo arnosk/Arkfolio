@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-08-18
+@modified: 2023-08-19
 
 Database Handler Class
 
@@ -12,6 +12,7 @@ from netaddr import P
 from numpy import add
 
 from src.data.dbschemadata import Wallet
+from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.errors.dberrors import DbError
 
@@ -114,11 +115,18 @@ def get_one_wallet_id(db: Db, address: str, siteid: int, profileid: int) -> int:
     return result[0][0]
 
 
-def get_wallet_id_notowned(db: Db, siteid: int, profileid: int):
-    query = "SELECT id FROM wallet WHERE owned=false AND site_id=? AND profile_id=?;"
-    queryargs = (siteid, profileid)
+def get_wallet_id_unknowns(db: Db, siteid: int, profileid: int) -> int:
+    query = "SELECT id FROM wallet WHERE owned=false AND addrestype=? AND site_id=? AND profile_id=?;"
+    queryargs = (WalletAddressType.UNKNOWN.value, siteid, profileid)
     result = db.query(query, queryargs)
-    return result
+    if len(result) == 0:
+        return 0
+    if len(result) == 1:
+        return result[0][0]
+    raise DbError(
+        f"Multiple records found for the UNKNOWN wallet in database "
+        f"for site {siteid} and profile {profileid}: {result}"
+    )
 
 
 def get_wallet(db: Db, id: int) -> tuple:

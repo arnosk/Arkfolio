@@ -10,6 +10,7 @@ name is set to the classname
 The settings can be changed by user in Database, but must be initialized
 """
 import logging
+import profile
 from abc import ABC, abstractmethod
 
 from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet, WalletChild
@@ -22,7 +23,12 @@ from src.db.dbscrapingtxn import (
     update_scrapingtxn_raw,
 )
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.db.dbwalletchild import get_walletchild_addresses, insert_walletchild
+from src.db.dbwallet import get_wallet_id_unknowns
+from src.db.dbwalletchild import (
+    get_walletchild_addresses,
+    insert_walletchild,
+    update_child_of_wallet_unkowns,
+)
 from src.errors.modelerrors import WalletIdError
 from src.srv.serverhelper2 import process_and_insert_rawtransaction
 
@@ -93,8 +99,15 @@ class SiteModel(ABC):
             raise WalletIdError(f"No id in structure for wallet: {wallet}")
         childwallets = self.get_new_child_addresses(db, wallet)
         for child in childwallets:
-            # TODO: get unknown wallet
-            insert_walletchild(db, child)
+            # TODO: get unknown wallet, check if this wallet has an child with same address,
+            # TODO: if so change the properties of that child to new master
+            wallet_uknowns_parent_id = get_wallet_id_unknowns(
+                db, self.site.id, wallet.profile.id
+            )
+            if wallet_uknowns_parent_id > 0:
+                update_child_of_wallet_unkowns(db, wallet_uknowns_parent_id, child)
+            else:
+                insert_walletchild(db, child)
         for child in childwallets:
             log.debug(
                 f"New child address: {child.address} - {child.type} - {child.parent.addresstype} - {child.parent.address:.10}"

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-08-16
+@modified: 2023-08-19
 
 Database Handler Class
 
@@ -111,3 +111,19 @@ def get_walletchildtypes(db: Db, parentid: int, type: ChildAddressType) -> list:
 def get_nr_walletchildtypes(db: Db, parentid: int, type: ChildAddressType) -> int:
     result = get_walletchildtypes(db, parentid, type)
     return len(result)
+
+
+def update_child_of_wallet_unkowns(
+    db: Db, unknwonparentid: int, walletchild: WalletChild
+):
+    query = """UPDATE walletchild 
+                SET parent_id=?, type=?, used=1
+                WHERE parent_id=? and address=?;"""
+    queryargs = (
+        walletchild.parent.id,
+        walletchild.type,
+        unknwonparentid,
+        walletchild.address,
+    )
+    db.execute(query, queryargs)
+    db.commit()
