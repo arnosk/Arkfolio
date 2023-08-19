@@ -117,11 +117,12 @@ def update_child_of_wallet_unkowns(
     db: Db, unknwonparentid: int, walletchild: WalletChild
 ):
     query = """UPDATE walletchild 
-                SET parent_id=?, type=?, used=1
+                SET parent_id=?, type=?, used=?
                 WHERE parent_id=? and address=?;"""
     queryargs = (
         walletchild.parent.id,
-        walletchild.type,
+        walletchild.type.value,
+        True,
         unknwonparentid,
         walletchild.address,
     )

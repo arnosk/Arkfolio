@@ -116,7 +116,7 @@ def get_one_wallet_id(db: Db, address: str, siteid: int, profileid: int) -> int:
 
 
 def get_wallet_id_unknowns(db: Db, siteid: int, profileid: int) -> int:
-    query = "SELECT id FROM wallet WHERE owned=false AND addrestype=? AND site_id=? AND profile_id=?;"
+    query = "SELECT id FROM wallet WHERE owned=false AND addresstype=? AND site_id=? AND profile_id=?;"
     queryargs = (WalletAddressType.UNKNOWN.value, siteid, profileid)
     result = db.query(query, queryargs)
     if len(result) == 0:
