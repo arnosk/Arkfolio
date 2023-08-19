@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-18
+@modified: 2023-08-19
 
 Controller for ArkFolio
 
@@ -62,7 +62,7 @@ class ArkfolioController:
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)
         if addresstype == WalletAddressType.INVALID:
-            log.info(f"{sitemodel.site.name} address is not valid: {address}")
+            log.info(f"{sitemodel.site.name} addresstype is not valid: {address}")
             return
 
         wallet = Wallet(
@@ -71,7 +71,12 @@ class ArkfolioController:
             address=address,
             addresstype=addresstype,
         )
-        if addresstype != WalletAddressType.NORMAL:
+        if (
+            addresstype == WalletAddressType.XPUB
+            or addresstype != WalletAddressType.YPUB
+            or addresstype != WalletAddressType.ZPUB
+            or addresstype != WalletAddressType.ELECTRUM
+        ):
             wallet.haschild = True
         wallet_exists = check_wallet_exists(self.db, wallet)
         if wallet_exists:

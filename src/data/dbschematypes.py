@@ -46,10 +46,11 @@ class WalletAddressType(Enum):
 
     INVALID = 0
     NORMAL = 1
-    XPUB = 2  # BIP32
-    YPUB = 3  # BIP49
-    ZPUB = 4  # BIP84
-    ELECTRUM = 5  # MPK
+    UNKNOWN = 2
+    XPUB = 3  # BIP32
+    YPUB = 4  # BIP49
+    ZPUB = 5  # BIP84
+    ELECTRUM = 6  # MPK
 
 
 class ChildAddressType(Enum):

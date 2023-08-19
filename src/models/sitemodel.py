@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-18
+@modified: 2023-08-19
 
 Abstract class for all sites
 
@@ -55,9 +55,12 @@ class SiteModel(ABC):
 
     def search_transactions(self, db: Db, wallet: Wallet) -> None:
         log.debug(f"Check for new transactions {self.site.name}-{wallet.address}")
-        if wallet.addresstype == WalletAddressType.INVALID:
+        if (
+            wallet.addresstype == WalletAddressType.INVALID
+            or wallet.addresstype == WalletAddressType.UNKNOWN
+        ):
             logging.exception(
-                f"Not searching txs for invalid wallet: {self.site.name}-{wallet.address}"
+                f"Not searching transactions for {wallet.addresstype} wallet: {self.site.name}-{wallet.address}"
             )
             return
         if wallet.haschild:
@@ -90,6 +93,7 @@ class SiteModel(ABC):
             raise WalletIdError(f"No id in structure for wallet: {wallet}")
         childwallets = self.get_new_child_addresses(db, wallet)
         for child in childwallets:
+            # TODO: get unknown wallet
             insert_walletchild(db, child)
         for child in childwallets:
             log.debug(
@@ -104,8 +108,8 @@ class SiteModel(ABC):
 
     def check_address(self, address: str) -> WalletAddressType:
         """Check the validity of an address
-        0 = incorrect, 1 = normal address,
-        2 = xpub bip32, 3 = ypub bip49, 4 = zpub bip84, 5 = electrum mpk"""
+        0 = incorrect, 1 = normal address, 2 = unkown wallet,
+        3 = xpub bip32, 4 = ypub bip49, 5 = zpub bip84, 6 = electrum mpk"""
         log.debug(f"No check for {self.site.name} address")
         return WalletAddressType.INVALID
 

@@ -83,8 +83,9 @@ class Bitcoin(SiteModel):
         wallet: Wallet,
     ) -> list[WalletChild]:
         if (
-            wallet.addresstype == WalletAddressType.NORMAL
-            or wallet.addresstype == WalletAddressType.INVALID
+            wallet.addresstype == WalletAddressType.INVALID
+            or wallet.addresstype == WalletAddressType.NORMAL
+            or wallet.addresstype == WalletAddressType.UNKNOWN
         ):
             raise WalletAddressTypeError(
                 f"Wallet address type must be a master public key type: {wallet}"

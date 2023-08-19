@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-18
+@modified: 2023-08-19
 
 Helper functions for Server
 
@@ -9,7 +9,7 @@ Helper functions for Server
 import logging
 
 from src.data.dbschemadata import Site, TransactionRaw
-from src.data.dbschematypes import TransactionType
+from src.data.dbschematypes import TransactionType, WalletAddressType
 from src.db.db import Db
 from src.db.dbasset import get_asset_id
 from src.db.dbtransaction import check_transaction_exists, insert_transaction_raw
@@ -66,7 +66,7 @@ def get_wallet_raw_notown(
             profileid=profileid,
             name=unknown_name,
             address=unknown_name,
-            addresstype=0,
+            addresstype=WalletAddressType.UNKNOWN.value,
             owned=False,
             enabled=False,
             haschild=True,
