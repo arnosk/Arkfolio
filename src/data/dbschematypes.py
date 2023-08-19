@@ -6,6 +6,7 @@
 Enum Classes for data in database
 
 """
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -19,7 +20,8 @@ class SiteType(Enum):
     INFO = 4
 
 
-class TransactionType(Enum, order=True):
+@dataclass(frozen=True)
+class TransactionType(Enum):
     """Class for type of transactions"""
 
     TRADE_BUY = 100
