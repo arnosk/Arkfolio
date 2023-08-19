@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-18
+@modified: 2023-08-19
 
 Sitemodel for bitcoin blockchain
 
@@ -24,6 +24,7 @@ from src.db.db import Db
 from src.db.dbasset import insert_asset
 from src.db.dbwalletchild import get_nr_walletchildtypes
 from src.errors.modelerrors import ChildAddressTypeError, WalletAddressTypeError
+from src.errors.reqerrors import TransactionValueNotFoundError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.req.requesthelper import request_get_dict
@@ -278,7 +279,14 @@ def _get_transactions_blockchaininfo(
                     if address_from == acc:
                         tx_type = TransactionType.OUT_UNDEFINED
                         tx_fee = tx["fee"]
-                        tx_value = input["value"]
+                        if "value" in input:
+                            tx_value = input["value"]
+                        elif "value" in input["prev_out"]:
+                            tx_value = input["prev_out"]["value"]
+                        else:
+                            raise TransactionValueNotFoundError(
+                                f"Cannot find value of transaction input: {input}"
+                            )
 
                 for output in tx["out"]:
                     addr = output.get("addr", "unknown")

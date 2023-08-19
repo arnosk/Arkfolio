@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-09
+@modified: 2023-08-19
 
 Enum Classes for data in database
 
@@ -19,7 +19,7 @@ class SiteType(Enum):
     INFO = 4
 
 
-class TransactionType(Enum):
+class TransactionType(Enum, order=True):
     """Class for type of transactions"""
 
     TRADE_BUY = 100

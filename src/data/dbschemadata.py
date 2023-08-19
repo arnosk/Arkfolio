@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-08-09
+@modified: 2023-08-19
 
 Data Classes for data from database
 
@@ -118,10 +118,10 @@ class TransactionRaw:
     """Dataclass for writing raw transactions to db"""
 
     timestamp: int
-    transactiontype: TransactionType
     txid: str
     from_wallet: str
     to_wallet: str
+    transactiontype: TransactionType
     quantity: int
     fee: int
     quote_asset: str = ""
