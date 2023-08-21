@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-19
+@modified: 2023-08-20
 
 Helper functions for Server
 
@@ -31,7 +31,7 @@ def get_walletchild_ids_join(db: Db, address: str, siteid: int, profileid: int):
 
 
 def get_wallet_own_raw(
-    db: Db, address: str, site: Site, profileid: int
+    db: Db, address: str, site: Site, profileid: int, allow_unknowns: bool
 ) -> tuple[int, int]:
     """Get wallet id's from address
     Returns the (wallet_id, walletchild_id)"""
@@ -43,21 +43,28 @@ def get_wallet_own_raw(
 
     # search child addresses
     res_wchild = get_walletchild_ids_join(db, address, site.id, profileid)
-    if len(res_wchild) == 0:
-        raise DbError(f"No wallets found with address: {address} for site {site.name}")
     if len(res_wchild) > 1:
         raise DbError(
             f"Multiple wallets found with same address: {address} for site {site.name}"
         )
-    return (res_wchild[0][1], res_wchild[0][0])
+    if len(res_wchild) == 1:
+        return (res_wchild[0][1], res_wchild[0][0])
+
+    # if len(res_wchild) == 0:
+    if not allow_unknowns:
+        raise DbError(f"No wallets found with address: {address} for site {site.name}")
+
+    # else
+    return get_wallet_unknowns_raw(db, address, site, profileid)
 
 
 def get_wallet_unknowns_raw(
     db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address
-    Returns the wallet_id, walletchild_id
+    Returns the (wallet_id, walletchild_id)
     address is not owned and is added to/searched from the unknowns wallet"""
+
     wallet_uknowns_parent_id = get_wallet_id_unknowns(db, site.id, profileid)
     if wallet_uknowns_parent_id == 0:
         unknown_name = f"Unknowns {site.name}"
@@ -115,20 +122,20 @@ def process_and_insert_rawtransaction(
     towalletchildid = 0
 
     if txn.transactiontype == TransactionType.IN_UNDEFINED:
-        # wallet to is this user
-        fromwalletid, fromwalletchildid = get_wallet_unknowns_raw(
-            db, txn.from_wallet, site, profileid
+        # wallet to is this users address
+        fromwalletid, fromwalletchildid = get_wallet_own_raw(
+            db, txn.from_wallet, site, profileid, True
         )
         towalletid, towalletchildid = get_wallet_own_raw(
-            db, txn.to_wallet, site, profileid
+            db, txn.to_wallet, site, profileid, False
         )
     if txn.transactiontype == TransactionType.OUT_UNDEFINED:
-        # wallet from is this user
+        # wallet from is this users address
         fromwalletid, fromwalletchildid = get_wallet_own_raw(
-            db, txn.from_wallet, site, profileid
+            db, txn.from_wallet, site, profileid, False
         )
-        towalletid, towalletchildid = get_wallet_unknowns_raw(
-            db, txn.to_wallet, site, profileid
+        towalletid, towalletchildid = get_wallet_own_raw(
+            db, txn.to_wallet, site, profileid, True
         )
 
     quoteassetid = get_asset_id(db, txn.quote_asset, chain)
