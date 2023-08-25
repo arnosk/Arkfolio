@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-19
+@modified: 2023-08-21
 
 Abstract class for all sites
 
@@ -10,7 +10,6 @@ name is set to the classname
 The settings can be changed by user in Database, but must be initialized
 """
 import logging
-import profile
 from abc import ABC, abstractmethod
 
 from src.data.dbschemadata import Price, Site, TransactionRaw, Wallet, WalletChild
@@ -99,12 +98,11 @@ class SiteModel(ABC):
             raise WalletIdError(f"No id in structure for wallet: {wallet}")
         childwallets = self.get_new_child_addresses(db, wallet)
         for child in childwallets:
-            # TODO: get unknown wallet, check if this wallet has an child with same address,
-            # TODO: if so change the properties of that child to new master
             wallet_uknowns_parent_id = get_wallet_id_unknowns(
                 db, self.site.id, wallet.profile.id
             )
             if wallet_uknowns_parent_id > 0:
+                # Change the master of the child to new master wallet
                 update_child_of_wallet_unkowns(db, wallet_uknowns_parent_id, child)
             else:
                 insert_walletchild(db, child)

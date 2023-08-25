@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-20
+@modified: 2023-08-21
 
 Helper functions for Server
 
@@ -30,11 +30,13 @@ def get_walletchild_ids_join(db: Db, address: str, siteid: int, profileid: int):
     return result
 
 
-def get_wallet_own_raw(
+def get_wallet_owned(
     db: Db, address: str, site: Site, profileid: int, allow_unknowns: bool
 ) -> tuple[int, int]:
     """Get wallet id's from address
     Returns the (wallet_id, walletchild_id)"""
+
+    # TODO: Also search from wallets of other profiles??
 
     # search wallet addresses
     walletid = get_one_wallet_id(db, address, site.id, profileid)
@@ -55,10 +57,10 @@ def get_wallet_own_raw(
         raise DbError(f"No wallets found with address: {address} for site {site.name}")
 
     # else
-    return get_wallet_unknowns_raw(db, address, site, profileid)
+    return get_wallet_unknowns(db, address, site, profileid)
 
 
-def get_wallet_unknowns_raw(
+def get_wallet_unknowns(
     db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address
@@ -123,18 +125,18 @@ def process_and_insert_rawtransaction(
 
     if txn.transactiontype == TransactionType.IN_UNDEFINED:
         # wallet to is this users address
-        fromwalletid, fromwalletchildid = get_wallet_own_raw(
+        fromwalletid, fromwalletchildid = get_wallet_owned(
             db, txn.from_wallet, site, profileid, True
         )
-        towalletid, towalletchildid = get_wallet_own_raw(
+        towalletid, towalletchildid = get_wallet_owned(
             db, txn.to_wallet, site, profileid, False
         )
     if txn.transactiontype == TransactionType.OUT_UNDEFINED:
         # wallet from is this users address
-        fromwalletid, fromwalletchildid = get_wallet_own_raw(
+        fromwalletid, fromwalletchildid = get_wallet_owned(
             db, txn.from_wallet, site, profileid, False
         )
-        towalletid, towalletchildid = get_wallet_own_raw(
+        towalletid, towalletchildid = get_wallet_owned(
             db, txn.to_wallet, site, profileid, True
         )
 
