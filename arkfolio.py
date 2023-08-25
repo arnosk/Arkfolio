@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-06-02
+@modified: 2023-08-25
 
 Startup program for ArkFolio
 
@@ -23,7 +23,7 @@ def __main__():
     config_logging()
     db = Db(config.DB_CONFIG)
     try:
-        # Todo: ideally server must run always
+        # TODO: Let server run always
         # so split up the server and ui into 2 different programs
         # Server gets asset prices and wallet txs every x min.
         srv = ArkfolioServer(db)

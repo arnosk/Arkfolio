@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-18
+@modified: 2023-08-25
 
 Server for ArkFolio
 
@@ -34,8 +34,12 @@ class ArkfolioServer:
             sitemodel.asset_dbinit(self.db)
 
     def run(self):
-        log.debug("Starting Arkfolio server")
+        log.info("Starting Arkfolio server")
 
+        # Go through all wallets to get new transactions
+        self.process_wallets()
+
+    def process_wallets(self):
         sites_wallets: dict[int, list[Wallet]] = get_wallets_per_site(
             self.sitemodels, self.db
         )
@@ -43,7 +47,6 @@ class ArkfolioServer:
         log.debug(f"Found wallets: {sites_wallets}")
 
         for siteid, wallets in sites_wallets.items():
-            # addresses: dict[int, list[str]] = {}  # int is for profileid
             for wallet in wallets:
                 # TODO: This must be done every day...
                 # TODO: Errors, like no connection, database fault must be shown to user

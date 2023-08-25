@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-19
+@modified: 2023-08-25
 
 Controller for ArkFolio
 
@@ -37,13 +37,12 @@ class ArkfolioController:
         self.profile: Profile
 
     def run(self):
-        log.debug("Starting Arkfolio controller")
+        log.info("Starting Arkfolio controller")
 
         # TODO: Use profiles, for now only 1 profile
         self.set_profile(name="Profile 1")
 
         # TODO: User must be able to choose form sites to create new wallets
-        # sitemodels: list[SiteModel] = self.srv.get_sitemodels()
         sitemodels: dict[int, SiteModel] = self.srv.sitemodels
 
         # Temp for testing first site, create wallet in db
@@ -91,13 +90,13 @@ class ArkfolioController:
         if not wallet.haschild:
             return
 
-        # calcultate child addresses for public address
+        # Create child addresses for master address
         parentid = get_one_wallet_id(
             self.db, address, sitemodel.site.id, self.profile.id
         )
         if parentid == 0:
             raise DbError(
-                f"No wallet found with address: {address} for site {sitemodel.site.name}"
+                f"No wallet found for just created master address: {address} for site {sitemodel.site.name}"
             )
         wallet.id = parentid
         sitemodel.check_for_new_childwallets(self.db, wallet)
