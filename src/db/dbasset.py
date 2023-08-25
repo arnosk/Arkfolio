@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-08-10
+@modified: 2023-08-25
 
 Database Handler Class
 
@@ -24,7 +24,7 @@ def insert_asset(db: Db, asset: Asset) -> None:
     asset_exists = check_asset_exists(db, asset)
     if asset_exists:
         # TODO: raise error?
-        log.error(f"Skipping insert, Asset already exists in db {asset}")
+        log.debug(f"Skipping insert. Asset already exists in db {asset}")
         return
     query = "INSERT INTO asset (name, symbol, decimal_places, chain) VALUES (?,?,?,?);"
     queryargs = (asset.name, asset.symbol, asset.decimal_places, asset.chain)

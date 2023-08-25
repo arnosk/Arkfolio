@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-19
+@modified: 2023-08-25
 
 Sitemodel for bitcoin blockchain
 
@@ -47,7 +47,7 @@ class Bitcoin(SiteModel):
 
     def asset_dbinit(self, db: Db) -> None:
         """Initialize asset bitcoin, BTC. No AssetOnSite necessary"""
-        log.debug(f"Asset initialize for {self.site.name} with database")
+        log.info(f"Asset initialize for {self.site.name} with database")
         asset: Asset = Asset(name="Bitcoin", symbol="BTC", decimal_places=8)
         insert_asset(db, asset)
 
