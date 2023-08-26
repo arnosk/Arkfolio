@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-25
+@modified: 2023-08-26
 
 Server for ArkFolio
 
@@ -50,17 +50,12 @@ class ArkfolioServer:
             for wallet in wallets:
                 # TODO: This must be done every day...
                 # TODO: Errors, like no connection, database fault must be shown to user
-                # TODO: Check public wallets for new child address
                 try:
-                    # addresses.setdefault(wallet.profile.id, []).append(wallet.address)
                     self.sitemodels[siteid].search_transactions(self.db, wallet)
                 except (DbError, RequestException) as e:
                     log.exception(f"Error: {e}")
 
-            log.debug(
-                f"Found addresses for {self.sitemodels[siteid].site.name} "
-                # f"are {addresses}"
-            )
+            log.debug(f"Wallets for {self.sitemodels[siteid].site.name} updated")
 
         # For blockchain wallet: do this per wallet address or per chain api
         # with use of asyncio, ccxt
