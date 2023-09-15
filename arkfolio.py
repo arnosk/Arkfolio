@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-08-25
+@modified: 2023-09-15
 
 Startup program for ArkFolio
 
@@ -28,7 +28,7 @@ def __main__():
         # Server gets asset prices and wallet txs every x min.
         srv = ArkfolioServer(db)
         view = ArkfolioViewCli()
-        app = ArkfolioController(view, db, srv)
+        app = ArkfolioController(db, view)
 
         # TODO: Implement threading or seperate programs
         srv.run()

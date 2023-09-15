@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-08-25
+@modified: 2023-09-15
 
 Controller for ArkFolio
 
@@ -17,7 +17,7 @@ from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
 from src.errors.dberrors import DbError
 from src.models.sitemodel import SiteModel
-from src.srv.arkfolioserver import ArkfolioServer
+from src.models.sitemodelfinder import find_all_sitemodels
 
 log = logging.getLogger(__name__)
 
@@ -30,11 +30,14 @@ class ArkfolioView(Protocol):
 class ArkfolioController:
     """Controller for Arkfolio program"""
 
-    def __init__(self, view: ArkfolioView, db: Db, server: ArkfolioServer) -> None:
+    def __init__(self, db: Db, view: ArkfolioView) -> None:
         self.view = view
         self.db = db
-        self.srv = server
         self.profile: Profile
+        self.sitemodels: dict[int, SiteModel] = find_all_sitemodels()
+        for sitemodel in self.sitemodels.values():
+            log.debug(f"Sitemodel: {sitemodel}")
+            sitemodel.model_dbread(self.db)
 
     def run(self):
         log.info("Starting Arkfolio controller")
@@ -43,12 +46,12 @@ class ArkfolioController:
         self.set_profile(name="Profile 1")
 
         # TODO: User must be able to choose form sites to create new wallets
-        sitemodels: dict[int, SiteModel] = self.srv.sitemodels
+        # sitemodels: dict[int, SiteModel] = self.srv.sitemodels
 
         # Temp for testing first site, create wallet in db
-        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
-        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
-        self.create_wallet(sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name

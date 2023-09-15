@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-21
+@modified: 2023-09-15
 
 Abstract class for all sites
 
@@ -42,16 +42,20 @@ class SiteModel(ABC):
     def model_dbinit(self, db: Db) -> None:
         """Initialization of site model in database
         First time: write sitemodel to database
-        All other times: read sitemodel from database
+        All other times: only read sitemodel from database
         """
         log.debug(f"Site model initialize {self.site.name} with database")
         insert_sitemodel(db, self.site)
+        self.model_dbread(db)
+
+    def model_dbread(self, db: Db) -> None:
+        """Read sitemodel from database"""
         site = get_sitemodel(db, self.site.id)
         self.site.api = site[3]
         self.site.secret = site[4]
         self.site.hasprice = site[5]
         self.site.enabled = site[6]
-        log.debug(f"Init of sitemodel ready {self.site}")
+        log.debug(f"Reading of sitemodel ready {self.site}")
 
     def set_api_secret(self, db: Db, api: str, secret: str) -> None:
         self.site.api = api
