@@ -49,7 +49,7 @@ class ArkfolioController:
 
         self.view.run()
 
-        # TODO: User must be able to choose form sites to create new wallets
+        # TODO: User must be able to choose from sites to create new wallets
         # Temp for testing first site, create wallet in db
         self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
         self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
