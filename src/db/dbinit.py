@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-19
-@modified: 2023-08-09
+@modified: 2023-09-15
 
 Database Handler Class
 
@@ -22,12 +22,12 @@ log = logging.getLogger(__name__)
 
 
 def db_init(db: Db) -> None:
-    _connect(db)
+    connect(db)
     _getversion(db)
     _postconnect(db)
 
 
-def _connect(db: Db) -> None:
+def connect(db: Db) -> None:
     db.open()
 
 
