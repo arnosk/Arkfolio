@@ -22,12 +22,12 @@ log = logging.getLogger(__name__)
 
 
 def db_init(db: Db) -> None:
-    connect(db)
+    db_connect(db)
     _getversion(db)
     _postconnect(db)
 
 
-def connect(db: Db) -> None:
+def db_connect(db: Db) -> None:
     db.open()
 
 

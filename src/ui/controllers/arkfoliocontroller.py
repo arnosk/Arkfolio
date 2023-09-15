@@ -13,7 +13,7 @@ import configprivate as conf
 from src.data.dbschemadata import Profile, Wallet
 from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
-from src.db.dbinit import connect
+from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
 from src.errors.dberrors import DbError
@@ -35,7 +35,7 @@ class ArkfolioController:
         self.view = view
         self.db = db
         self.profile: Profile
-        connect(self.db)
+        db_connect(self.db)
         self.sitemodels: dict[int, SiteModel] = find_all_sitemodels()
         for sitemodel in self.sitemodels.values():
             log.debug(f"Sitemodel: {sitemodel}")
