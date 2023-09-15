@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class ArkfolioView(Protocol):
-    def show_help(self) -> None:
+    def run(self) -> None:
         ...
 
 
@@ -47,9 +47,9 @@ class ArkfolioController:
         # TODO: Use profiles, for now only 1 profile
         self.set_profile(name="Profile 1")
 
-        # TODO: User must be able to choose form sites to create new wallets
-        # sitemodels: dict[int, SiteModel] = self.srv.sitemodels
+        self.view.run()
 
+        # TODO: User must be able to choose form sites to create new wallets
         # Temp for testing first site, create wallet in db
         self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
         self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub

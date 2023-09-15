@@ -13,6 +13,7 @@ from src.db.db import Db
 from src.logging import config_logging
 from src.ui.controllers.arkfoliocontroller import ArkfolioController
 from src.ui.views.arkfolioviewcli import ArkfolioViewCli
+from src.ui.views.arkfolioviewtk import ArkfolioViewTk
 
 log = logging.getLogger(__name__)
 
@@ -22,8 +23,9 @@ def __main__():
     config_logging()
     db = Db(config.DB_CONFIG)
     try:
-        view = ArkfolioViewCli()
-        app = ArkfolioController(db, view)
+        # view_cli = ArkfolioViewCli()
+        view_tk = ArkfolioViewTk()
+        app = ArkfolioController(db, view_tk)
         app.run()
     except Exception as e:
         log.exception(e)
