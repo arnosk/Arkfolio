@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-09-15
-@modified: 2023-09-15
+@modified: 2023-09-16
 
 View CLI UI helper
 """
@@ -24,8 +24,8 @@ class Command:
         self.arguments = [x.lower() for x in self.arguments]
 
 
-def get_input_command(message: str = "Command, help, or (Q)uit : ") -> Command:
-    """The main user input"""
+def get_input_command(message: str = "Main> ") -> Command:
+    """User input"""
     print()
     input_str = input(message)
     if input_str == "":
