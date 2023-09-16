@@ -24,7 +24,7 @@ class Command:
         self.arguments = [x.lower() for x in self.arguments]
 
 
-def get_input_command(message: str = "Main> ") -> Command:
+def get_input_command(message: str = "> ") -> Command:
     """User input"""
     print()
     input_str = input(message)
