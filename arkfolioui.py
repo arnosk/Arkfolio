@@ -24,7 +24,7 @@ def __main__():
     db = Db(config.DB_CONFIG)
     try:
         view_cli = ArkfolioViewCli()
-        view_tk = ArkfolioViewTk()
+        # view_tk = ArkfolioViewTk()
         app = ArkfolioController(db, view_cli)
         app.run()
     except Exception as e:

@@ -24,7 +24,7 @@ class ArkfolioViewCli:
         """Show the available cli commands"""
         print("    Help for Arkfolio CLI UI")
         print("---------------------------------")
-        print("Quit/Exit         - Quits program")
+        print("Quit/Exit         - Quits program or back to previous menu")
         print("Help              - This help message")
         print("Transactions      - Open txns menu")
         print("    Show txns         - Show txns")
@@ -37,11 +37,20 @@ class ArkfolioViewCli:
         print("    Update wallet     - Update a wallet, rename, disable/enable")
         print("Portfolio         - Open portfolio menu")
         print("    Show              - Show portfolio")
-        print("    Filter            - Show portfolio")
-        print("    Graph             - Show graph portfolio")
+        print("    Filter            - Filter portfolio")
+        print("    Graph             - Graph portfolio")
         print("    Export portfolio  - Export portfolio at date time")
+        print("---------------------------------")
+        print("Donations are welcome!")
+        print("    ETH, POLYGON, BNB, PULSE:")
+        print("        0xcF99cB3Be2F279D96B8ebF877aF22e05E58Db001")
+        print("---------------------------------")
 
     def run(self) -> None:
+        """CLI UI Starting point:"""
+        self.menu_main()
+
+    def menu_main(self) -> None:
         """CLI UI main program:"""
         print(f"Arkfolio main")
         print(f"-------------")
@@ -74,6 +83,12 @@ class ArkfolioViewCli:
                     break
                 case Command(command="help" | "h"):
                     self.show_help()
+                case Command(command="show" | "s"):
+                    self.show_help()
+                case Command(command="filter" | "f"):
+                    self.show_help()
+                case Command(command="export" | "e"):
+                    self.show_help()
                 case _:
                     print(f"Unknown command {cmd.command!r}, try again.")
 
@@ -88,6 +103,14 @@ class ArkfolioViewCli:
                     break
                 case Command(command="help" | "h"):
                     self.show_help()
+                case Command(command="show" | "s"):
+                    self.show_help()
+                case Command(command="add" | "a"):
+                    self.show_help()
+                case Command(command="remove" | "rem" | "r" | "del" | "d"):
+                    self.show_help()
+                case Command(command="update" | "u"):
+                    self.show_help()
                 case _:
                     print(f"Unknown command {cmd.command!r}, try again.")
 
@@ -101,6 +124,14 @@ class ArkfolioViewCli:
                 case Command(command="quit" | "q" | "exit" | "e"):
                     break
                 case Command(command="help" | "h"):
+                    self.show_help()
+                case Command(command="show" | "s"):
+                    self.show_help()
+                case Command(command="graph" | "g"):
+                    self.show_help()
+                case Command(command="filter" | "f"):
+                    self.show_help()
+                case Command(command="export" | "e"):
                     self.show_help()
                 case _:
                     print(f"Unknown command {cmd.command!r}, try again.")
