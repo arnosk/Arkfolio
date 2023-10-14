@@ -46,14 +46,9 @@ class ArkfolioController:
 
         # TODO: Use profiles, for now only 1 profile
         self.set_profile(name="Profile 1")
+        # self.tempCreateTestWallets()
 
         self.view.run()
-
-        # TODO: User must be able to choose from sites to create new wallets
-        # Temp for testing first site, create wallet in db
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name
@@ -105,3 +100,9 @@ class ArkfolioController:
             )
         wallet.id = parentid
         sitemodel.check_for_new_childwallets(self.db, wallet)
+
+    def tempCreateTestWallets(self) -> None:
+        # Temp for testing first site, create wallet in db
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
+        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
