@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-08-10
+@modified: 2023-10-14
 
 Database Handler Class
 
@@ -16,8 +16,8 @@ log = logging.getLogger(__name__)
 
 
 def insert_transaction(db: Db, txn: Transaction) -> None:
-    asset_exists = check_transaction_exists(db, txn.txid)
-    if asset_exists:
+    txn_exists = check_transaction_exists(db, txn.txid)
+    if txn_exists:
         raise DbError(f"Not allowed to create new transaction with same hash {txn}")
     query = """INSERT OR IGNORE INTO transactions 
                     (profile_id, site_id, transactiontype_id, timestamp, txid, 
@@ -96,13 +96,13 @@ def insert_transaction_raw(
 
 def check_transaction_exists(db: Db, txid: str) -> bool:
     """Checks if asset on site exists in db"""
-    result = get_assetonsite_ids(db, txid)
+    result = get_transaction_ids(db, txid)
     if len(result) == 0:
         return False
     return True
 
 
-def get_assetonsite_ids(db: Db, txid: str):
+def get_transaction_ids(db: Db, txid: str):
     query = "SELECT id FROM transactions WHERE txid=?;"
     queryargs = (txid,)
     result = db.query(query, queryargs)
