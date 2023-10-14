@@ -26,33 +26,6 @@ class ArkfolioViewCli:
         self.control = control
         self.menu_main()
 
-    def show_help(self) -> None:
-        """Show the available cli commands"""
-        print("---------------------------------")
-        print("    Help for Arkfolio CLI UI")
-        print("---------------------------------")
-        print("Quit/Exit         - Quits program or back to previous menu")
-        print("Help              - This help message")
-        print("Transactions      - Open txns menu")
-        print("    Show txns         - Show txns")
-        print("    Filter txns       - Filter txns on site, address, start, end data")
-        print("    Export txns       - Export txns, according to selected filter")
-        print("Wallet            - Open wallet menu")
-        print("    Show wallets      - Show wallet")
-        print("    Add wallet        - Adding a wallet")
-        print("    Remove wallet     - Removing a wallet")
-        print("    Update wallet     - Update a wallet, rename, disable/enable")
-        print("Portfolio         - Open portfolio menu")
-        print("    Show              - Show portfolio")
-        print("    Filter            - Filter portfolio")
-        print("    Graph             - Graph portfolio")
-        print("    Export portfolio  - Export portfolio at date time")
-        print("---------------------------------")
-        print("Donations are welcome!")
-        print("    ETH, POLYGON, BNB, PULSE:")
-        print("        0xcF99cB3Be2F279D96B8ebF877aF22e05E58Db001")
-        print("---------------------------------")
-
     def menu_main(self) -> None:
         """CLI UI main program:"""
         while True:
@@ -83,7 +56,7 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_help()
+                    self.show_txns()
                 case Command(command="filter" | "f"):
                     self.show_help()
                 case Command(command="export" | "e"):
@@ -101,7 +74,7 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_help()
+                    self.show_wallets()
                 case Command(command="add" | "a"):
                     self.show_help()
                 case Command(command="remove" | "rem" | "r" | "del" | "d"):
@@ -121,7 +94,7 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_help()
+                    self.show_portfolio()
                 case Command(command="graph" | "g"):
                     self.show_help()
                 case Command(command="filter" | "f"):
@@ -130,3 +103,48 @@ class ArkfolioViewCli:
                     self.show_help()
                 case _:
                     print(f"Unknown command {cmd.command!r}, try again.")
+
+    def show_help(self) -> None:
+        """Show the available cli commands"""
+        print("---------------------------------")
+        print("    Help for Arkfolio CLI UI")
+        print("---------------------------------")
+        print("Quit/Exit         - Quits program or back to previous menu")
+        print("Help              - This help message")
+        print("Transactions      - Open txns menu")
+        print("    Show txns         - Show txns")
+        print("    Filter txns       - Filter txns on site, address, start, end data")
+        print("    Export txns       - Export txns, according to selected filter")
+        print("Wallet            - Open wallet menu")
+        print("    Show wallets      - Show wallet")
+        print("    Add wallet        - Adding a wallet")
+        print("    Remove wallet     - Removing a wallet")
+        print("    Update wallet     - Update a wallet, rename, disable/enable")
+        print("Portfolio         - Open portfolio menu")
+        print("    Show              - Show portfolio")
+        print("    Filter            - Filter portfolio")
+        print("    Graph             - Graph portfolio")
+        print("    Export portfolio  - Export portfolio at date time")
+        print("---------------------------------")
+        print("Donations are welcome!")
+        print("    ETH, POLYGON, BNB, PULSE:")
+        print("        0xcF99cB3Be2F279D96B8ebF877aF22e05E58Db001")
+        print("---------------------------------")
+
+    def show_txns(self) -> None:
+        """Show transactions"""
+        print("---------------------------------")
+        print("    Transactions")
+        print("---------------------------------")
+
+    def show_wallets(self) -> None:
+        """Show wallets"""
+        print("---------------------------------")
+        print("    Wallets")
+        print("---------------------------------")
+
+    def show_portfolio(self) -> None:
+        """Show portfolio"""
+        print("---------------------------------")
+        print("    Portfolio")
+        print("---------------------------------")

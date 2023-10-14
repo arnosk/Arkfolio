@@ -58,6 +58,10 @@ class ArkfolioController:
             insert_profile(self.db, name)
         self.profile = get_profile(self.db, name)
 
+    def get_txns(self) -> None:
+        """Get transactions from database"""
+        pass
+
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)
         if addresstype == WalletAddressType.INVALID:
