@@ -136,6 +136,7 @@ class ArkfolioViewCli:
         print("---------------------------------")
         print("    Transactions")
         print("---------------------------------")
+        self.control.get_txns()
 
     def show_wallets(self) -> None:
         """Show wallets"""

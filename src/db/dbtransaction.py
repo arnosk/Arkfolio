@@ -8,9 +8,10 @@ Database Handler Class
 """
 import logging
 
-from src.data.dbschemadata import Transaction
+from src.data.dbschemadata import Transaction, TransactionRaw
 from src.db.db import Db
 from src.errors.dberrors import DbError
+from src.func.helperfunc import convert_timestamp
 
 log = logging.getLogger(__name__)
 
@@ -107,3 +108,24 @@ def get_transaction_ids(db: Db, txid: str):
     queryargs = (txid,)
     result = db.query(query, queryargs)
     return result
+
+
+def get_raw_transactions(db: Db, profileid: int) -> list[TransactionRaw]:
+    txns: list[TransactionRaw] = []
+    query = """SELECT transactions.id, site.name, 
+                transactiontype.type, transactiontype.subtype, 
+                timestamp, txid, 
+                from_wallet_id, from_walletchild_id, 
+                to_wallet_id, to_walletchild_id,
+                quote_asset_id, base_asset_id, fee_asset_id,
+                quantity, fee, note 
+            FROM transactions 
+            INNER JOIN site ON site.id = transactions.site_id
+            INNER JOIN transactiontype ON transactiontype.id = transactions.transactiontype_id
+            WHERE transactions.profile_id=?;"""
+    queryargs = (profileid,)
+    result = db.query(query, queryargs)
+    if len(result) > 0:
+        for res in result:
+            print(f"{convert_timestamp(res[4])}:{res}")
+    return txns
