@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-09-15
+@modified: 2023-10-14
 
 Controller for ArkFolio
 
@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class ArkfolioView(Protocol):
-    def run(self) -> None:
+    def run(self, control) -> None:
         ...
 
 
@@ -48,7 +48,7 @@ class ArkfolioController:
         self.set_profile(name="Profile 1")
         # self.tempCreateTestWallets()
 
-        self.view.run()
+        self.view.run(self)
 
     def set_profile(self, name: str) -> None:
         """Set to profile to name

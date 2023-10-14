@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-05-20
+@modified: 2023-10-14
 
 Command editor UI for ArkFolio
 
@@ -9,6 +9,7 @@ Command editor UI for ArkFolio
 import logging
 import sys
 
+from src.ui.controllers.arkfoliocontroller import ArkfolioController
 from src.ui.views.viewclihelper import Command, get_input_command
 
 log = logging.getLogger(__name__)
@@ -20,8 +21,14 @@ class ArkfolioViewCli:
     def __init__(self) -> None:
         pass
 
+    def run(self, control: ArkfolioController) -> None:
+        """CLI UI Starting point:"""
+        self.control = control
+        self.menu_main()
+
     def show_help(self) -> None:
         """Show the available cli commands"""
+        print("---------------------------------")
         print("    Help for Arkfolio CLI UI")
         print("---------------------------------")
         print("Quit/Exit         - Quits program or back to previous menu")
@@ -46,14 +53,8 @@ class ArkfolioViewCli:
         print("        0xcF99cB3Be2F279D96B8ebF877aF22e05E58Db001")
         print("---------------------------------")
 
-    def run(self) -> None:
-        """CLI UI Starting point:"""
-        self.menu_main()
-
     def menu_main(self) -> None:
         """CLI UI main program:"""
-        print(f"Arkfolio main")
-        print(f"-------------")
         while True:
             cmd = get_input_command("Main> ")
             match cmd:
@@ -74,8 +75,6 @@ class ArkfolioViewCli:
 
     def menu_txns(self) -> None:
         """CLI UI transactions"""
-        print(f"Arkfolio Transactions")
-        print(f"---------------------")
         while True:
             cmd = get_input_command("Transaction> ")
             match cmd:
@@ -94,8 +93,6 @@ class ArkfolioViewCli:
 
     def menu_wallet(self) -> None:
         """CLI UI wallets"""
-        print(f"Arkfolio Wallets")
-        print(f"---------------------")
         while True:
             cmd = get_input_command("Wallet> ")
             match cmd:
@@ -116,8 +113,6 @@ class ArkfolioViewCli:
 
     def menu_portfolio(self) -> None:
         """CLI UI portfolio"""
-        print(f"Arkfolio Portfolio")
-        print(f"---------------------")
         while True:
             cmd = get_input_command("Portfolio> ")
             match cmd:
