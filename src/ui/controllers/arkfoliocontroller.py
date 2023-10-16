@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-14
+@modified: 2023-10-16
 
 Controller for ArkFolio
 
@@ -15,11 +15,11 @@ from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
-from src.db.dbtransaction import get_raw_transactions
 from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
 from src.errors.dberrors import DbError
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
+from src.ui.controllers.controllerhelper import get_transactions
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class ArkfolioController:
 
     def get_txns(self) -> None:
         """Get transactions from database"""
-        get_raw_transactions(self.db, self.profile.id)
+        get_transactions(self.db, self.profile)
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)

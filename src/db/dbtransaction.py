@@ -1,14 +1,14 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-10-14
+@modified: 2023-10-16
 
 Database Handler Class
 
 """
 import logging
 
-from src.data.dbschemadata import Transaction, TransactionRaw
+from src.data.dbschemadata import Transaction
 from src.db.db import Db
 from src.errors.dberrors import DbError
 from src.func.helperfunc import convert_timestamp
@@ -110,22 +110,36 @@ def get_transaction_ids(db: Db, txid: str):
     return result
 
 
-def get_raw_transactions(db: Db, profileid: int) -> list[TransactionRaw]:
-    txns: list[TransactionRaw] = []
-    query = """SELECT transactions.id, site.name, 
-                transactiontype.type, transactiontype.subtype, 
-                timestamp, txid, 
-                from_wallet_id, from_walletchild_id, 
-                to_wallet_id, to_walletchild_id,
-                quote_asset_id, base_asset_id, fee_asset_id,
-                quantity, fee, note 
+def get_db_transactions(db: Db, profileid: int) -> list:
+    query = """SELECT transactions.id, timestamp, txid, note, quantity, fee,
+                site.id, site.name, 
+                transactiontype.id, transactiontype.type, transactiontype.subtype, 
+                from_wallet_id, walletfrom.address, walletfrom.enabled, walletfrom.owned, walletfrom.haschild, walletfrom.name, 
+                walletfrom.addresstype, wallettypefrom.name,
+                to_wallet_id, walletto.address, walletto.enabled, walletto.owned, walletto.haschild, walletto.name, 
+                walletto.addresstype, wallettypeto.name,
+                from_walletchild_id, walletchildfrom.address, walletchildfrom.used, 
+                walletchildfrom.type, childaddresstypefrom.name,
+                to_walletchild_id, walletchildto.address, walletchildto.used, 
+                walletchildto.type, childaddresstypeto.name,
+                quote_asset_id, assetquote.name, assetquote.symbol, assetquote.decimal_places, assetquote.chain,
+                base_asset_id, assetbase.name, assetbase.symbol, assetbase.decimal_places, assetbase.chain,
+                fee_asset_id, assetfee.name, assetfee.symbol, assetfee.decimal_places, assetfee.chain
             FROM transactions 
             INNER JOIN site ON site.id = transactions.site_id
             INNER JOIN transactiontype ON transactiontype.id = transactions.transactiontype_id
+            INNER JOIN wallet AS walletfrom ON walletfrom.id = transactions.from_wallet_id
+            INNER JOIN walletaddresstype AS wallettypefrom ON wallettypefrom.id = walletfrom.addresstype
+            INNER JOIN wallet AS walletto ON walletto.id = transactions.to_wallet_id
+            INNER JOIN walletaddresstype AS wallettypeto ON wallettypeto.id = walletto.addresstype
+            LEFT JOIN walletchild AS walletchildfrom ON walletchildfrom.id = transactions.from_walletchild_id
+            LEFT JOIN childaddresstype AS childaddresstypefrom ON childaddresstypefrom.id = walletchildfrom.type
+            LEFT JOIN walletchild AS walletchildto ON walletchildto.id = transactions.to_walletchild_id
+            LEFT JOIN childaddresstype AS childaddresstypeto ON childaddresstypeto.id = walletchildto.type
+            LEFT JOIN asset AS assetquote ON assetquote.id = transactions.quote_asset_id
+            LEFT JOIN asset AS assetbase ON assetbase.id = transactions.base_asset_id
+            LEFT JOIN asset AS assetfee ON assetfee.id = transactions.fee_asset_id
             WHERE transactions.profile_id=?;"""
     queryargs = (profileid,)
     result = db.query(query, queryargs)
-    if len(result) > 0:
-        for res in result:
-            print(f"{convert_timestamp(res[4])}:{res}")
-    return txns
+    return result
