@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-10-16
+@modified: 2023-10-17
 
 Database Handler Class
 
@@ -112,7 +112,7 @@ def get_transaction_ids(db: Db, txid: str):
 
 def get_db_transactions(db: Db, profileid: int) -> list:
     query = """SELECT transactions.id, timestamp, txid, note, quantity, fee,
-                site.id, site.name, 
+                site.id, site.name, sitetype.id, sitetype.name,
                 transactiontype.id, transactiontype.type, transactiontype.subtype, 
                 from_wallet_id, walletfrom.address, walletfrom.enabled, walletfrom.owned, walletfrom.haschild, walletfrom.name, 
                 walletfrom.addresstype, wallettypefrom.name,
@@ -127,6 +127,7 @@ def get_db_transactions(db: Db, profileid: int) -> list:
                 fee_asset_id, assetfee.name, assetfee.symbol, assetfee.decimal_places, assetfee.chain
             FROM transactions 
             INNER JOIN site ON site.id = transactions.site_id
+            INNER JOIN sitetype ON sitetype.id = site.sitetype_id
             INNER JOIN transactiontype ON transactiontype.id = transactions.transactiontype_id
             INNER JOIN wallet AS walletfrom ON walletfrom.id = transactions.from_wallet_id
             INNER JOIN walletaddresstype AS wallettypefrom ON wallettypefrom.id = walletfrom.addresstype
