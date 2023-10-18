@@ -1,14 +1,18 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-10-14
+@modified: 2023-10-18
 
 Command editor UI for ArkFolio
 
 """
 import logging
 import sys
+from dataclasses import asdict
 
+import pandas as pd
+
+from src.data.dbschemadata import Transaction
 from src.ui.controllers.arkfoliocontroller import ArkfolioController
 from src.ui.views.viewclihelper import Command, get_input_command
 
@@ -136,7 +140,16 @@ class ArkfolioViewCli:
         print("---------------------------------")
         print("    Transactions")
         print("---------------------------------")
-        self.control.get_txns()
+        txns: list[Transaction] = self.control.get_txns()
+
+        """Converts list of objects to a pandas DataFrame
+        json_normalize is used this way to flatten the coindata object inside the pricedata
+
+        from src.func.helperfunc import convert_timestamp
+        print(f"{convert_timestamp(res[1])}:{res}")
+        """
+        df = pd.json_normalize(data=[asdict(obj) for obj in txns])
+        print(df)
 
     def show_wallets(self) -> None:
         """Show wallets"""

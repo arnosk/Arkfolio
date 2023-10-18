@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-10-16
-@modified: 2023-10-17
+@modified: 2023-10-18
 
 Helper functions for Controller
 
@@ -18,7 +18,6 @@ from src.data.dbschematypes import (
 from src.data.money import Money
 from src.db.db import Db
 from src.db.dbtransaction import get_db_transactions
-from src.func.helperfunc import convert_timestamp
 
 log = logging.getLogger(__name__)
 
@@ -28,8 +27,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
     result = get_db_transactions(db, profile.id)
     if len(result) > 0:
         for res in result:
-            print(f"{convert_timestamp(res[1])}:{res}")
-            site = Site(id=res[6], name=res[7], sitetype=SiteType(res[8]))
+            site = Site(id=res[6], name=res[7], sitetype=SiteType(value=res[8]))
             walletfrom = Wallet(
                 profile=profile,
                 site=site,
@@ -39,7 +37,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                 owned=res[16],
                 haschild=res[17],
                 name=res[18],
-                addresstype=WalletAddressType(res[19]),
+                addresstype=WalletAddressType(value=res[19]),
             )
             walletto = Wallet(
                 profile=profile,
@@ -50,7 +48,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                 owned=res[24],
                 haschild=res[25],
                 name=res[26],
-                addresstype=WalletAddressType(res[27]),
+                addresstype=WalletAddressType(value=res[27]),
             )
             walletchildfrom = None
             if walletfrom.haschild:
@@ -59,7 +57,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                     id=res[29],
                     address=res[30],
                     used=res[31],
-                    type=ChildAddressType(res[32]),
+                    type=ChildAddressType(value=res[32]),
                 )
             walletchildto = None
             if walletto.haschild:
@@ -68,7 +66,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                     id=res[34],
                     address=res[35],
                     used=res[36],
-                    type=ChildAddressType(res[37]),
+                    type=ChildAddressType(value=res[37]),
                 )
             assetquote = Asset(
                 id=res[39],
@@ -112,7 +110,7 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                 quantity=quantity,
                 fee=fee,
                 site=site,
-                transactiontype=TransactionType(res[10]),  # type: ignore
+                transactiontype=TransactionType(value=res[10]),
                 from_wallet=walletfrom,
                 to_wallet=walletto,
                 from_walletchild=walletchildfrom,
@@ -121,7 +119,5 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
                 base_asset=assetbase,
                 fee_asset=assetfee,
             )
-            print("-")
-            print(txn)
-            print("------------------------")
+            txns.append(txn)
     return txns

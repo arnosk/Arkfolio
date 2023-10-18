@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-08-19
+@modified: 2023-10-18
 
 Enum Classes for data in database
 
@@ -20,7 +20,7 @@ class SiteType(Enum):
     INFO = 4
 
 
-@dataclass(frozen=True)
+# @dataclass(frozen=True)
 class TransactionType(Enum):
     """Class for type of transactions"""
 

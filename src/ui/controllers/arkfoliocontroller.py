@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-16
+@modified: 2023-10-18
 
 Controller for ArkFolio
 
@@ -10,7 +10,7 @@ import logging
 from typing import Protocol
 
 import configprivate as conf
-from src.data.dbschemadata import Profile, Wallet
+from src.data.dbschemadata import Profile, Transaction, Wallet
 from src.data.dbschematypes import WalletAddressType
 from src.db.db import Db
 from src.db.dbinit import db_connect
@@ -59,9 +59,9 @@ class ArkfolioController:
             insert_profile(self.db, name)
         self.profile = get_profile(self.db, name)
 
-    def get_txns(self) -> None:
+    def get_txns(self) -> list[Transaction]:
         """Get transactions from database"""
-        get_transactions(self.db, self.profile)
+        return get_transactions(self.db, self.profile)
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)
