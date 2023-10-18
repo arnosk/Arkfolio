@@ -7,7 +7,11 @@ Controller for ArkFolio
 
 """
 import logging
+from dataclasses import asdict
 from typing import Protocol
+
+import pandas as pd
+from pandas import DataFrame
 
 import configprivate as conf
 from src.data.dbschemadata import Profile, Transaction, Wallet
@@ -59,9 +63,18 @@ class ArkfolioController:
             insert_profile(self.db, name)
         self.profile = get_profile(self.db, name)
 
-    def get_txns(self) -> list[Transaction]:
+    def get_txns(self) -> DataFrame:
         """Get transactions from database"""
-        return get_transactions(self.db, self.profile)
+        txns: list[Transaction] = get_transactions(self.db, self.profile)
+
+        """Converts list of objects to a pandas DataFrame
+        json_normalize is used this way to flatten the coindata object inside the pricedata
+
+        from src.func.helperfunc import convert_timestamp
+        print(f"{convert_timestamp(res[1])}:{res}")
+        """
+        df = pd.json_normalize(data=[asdict(obj) for obj in txns])
+        return df
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
         addresstype: WalletAddressType = sitemodel.check_address(address)
