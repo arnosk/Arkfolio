@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-09-15
+@modified: 2023-10-20
 
 Startup program for ArkFolio UI
 
@@ -23,9 +23,10 @@ def __main__():
     config_logging()
     db = Db(config.DB_CONFIG)
     try:
-        view_cli = ArkfolioViewCli()
-        # view_tk = ArkfolioViewTk()
-        app = ArkfolioController(db, view_cli)
+        # view_cli = ArkfolioViewCli()
+        # app = ArkfolioController(db, view_cli)
+        view_tk = ArkfolioViewTk()
+        app = ArkfolioController(db, view_tk)
         app.run()
     except Exception as e:
         log.exception(e)

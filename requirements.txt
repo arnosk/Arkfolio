@@ -1,5 +1,6 @@
 cfscrape
 pandas
+pandastable
 python_dateutil
 requests
 urllib3

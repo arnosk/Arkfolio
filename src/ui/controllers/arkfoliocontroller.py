@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-18
+@modified: 2023-10-20
 
 Controller for ArkFolio
 
@@ -64,15 +64,16 @@ class ArkfolioController:
         self.profile = get_profile(self.db, name)
 
     def get_txns(self) -> DataFrame:
-        """Get transactions from database"""
+        """Get transactions from database
+        And convert to pandas dataframe"""
         txns: list[Transaction] = get_transactions(self.db, self.profile)
 
         """Converts list of objects to a pandas DataFrame
-        json_normalize is used this way to flatten the coindata object inside the pricedata
-
         from src.func.helperfunc import convert_timestamp
         print(f"{convert_timestamp(res[1])}:{res}")
         """
+
+        # json_normalize is used this way to flatten the coindata object inside the pricedata
         df = pd.json_normalize(data=[asdict(obj) for obj in txns])
         return df
 
