@@ -144,9 +144,9 @@ class ArkfolioController:
         )
         if (
             addresstype == WalletAddressType.XPUB
-            or addresstype != WalletAddressType.YPUB
-            or addresstype != WalletAddressType.ZPUB
-            or addresstype != WalletAddressType.ELECTRUM
+            or addresstype == WalletAddressType.YPUB
+            or addresstype == WalletAddressType.ZPUB
+            or addresstype == WalletAddressType.ELECTRUM
         ):
             wallet.haschild = True
         wallet_exists = check_wallet_exists(self.db, wallet)
