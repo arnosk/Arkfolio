@@ -144,7 +144,6 @@ def get_db_wallets(db: Db, profileid: int) -> list:
             FROM wallet WHERE profile_id=?;"""
     queryargs = (profileid,)
     result = db.query(query, queryargs)
-    log.debug(f"Record of wallets in database: {result}")
     if len(result) == 0:
         log.info(f"No records found of a wallet in database")
     return result
