@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-30
-@modified: 2023-08-19
+@modified: 2023-10-21
 
 Database Handler Class
 
@@ -139,10 +139,11 @@ def get_wallet(db: Db, id: int) -> tuple:
     return result[0]
 
 
-def get_all_wallets(db: Db) -> list:
+def get_db_wallets(db: Db, profileid: int) -> list:
     query = """SELECT id, site_id, profile_id, name, address, addresstype, owned, enabled, haschild 
-            FROM wallet"""
-    result = db.query(query)
+            FROM wallet WHERE profile_id=?;"""
+    queryargs = (profileid,)
+    result = db.query(query, queryargs)
     log.debug(f"Record of wallets in database: {result}")
     if len(result) == 0:
         log.info(f"No records found of a wallet in database")

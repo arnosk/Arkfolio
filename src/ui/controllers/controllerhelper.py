@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-10-16
-@modified: 2023-10-18
+@modified: 2023-10-21
 
 Helper functions for Controller
 
@@ -18,6 +18,7 @@ from src.data.dbschematypes import (
 from src.data.money import Money
 from src.db.db import Db
 from src.db.dbtransaction import get_db_transactions
+from src.db.dbwallet import get_db_wallets
 
 log = logging.getLogger(__name__)
 
@@ -121,3 +122,24 @@ def get_transactions(db: Db, profile: Profile) -> list[Transaction]:
             )
             txns.append(txn)
     return txns
+
+
+def get_wallets(db: Db, profile: Profile) -> list[Wallet]:
+    wallets: list[Wallet] = []
+    result = get_db_wallets(db, profile.id)
+    if len(result) > 0:
+        for res in result:
+            site = Site(id=res[1], name=res[7], sitetype=SiteType(value=res[8]))
+            wallet = Wallet(
+                profile=profile,
+                site=site,
+                id=res[0],
+                address=res[4],
+                enabled=res[6],
+                owned=res[7],
+                haschild=res[8],
+                name=res[3],
+                addresstype=WalletAddressType(value=res[5]),
+            )
+            wallets.append(wallet)
+    return wallets

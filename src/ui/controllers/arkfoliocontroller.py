@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-20
+@modified: 2023-10-21
 
 Controller for ArkFolio
 
@@ -24,7 +24,7 @@ from src.errors.dberrors import DbError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
-from src.ui.controllers.controllerhelper import get_transactions
+from src.ui.controllers.controllerhelper import get_transactions, get_wallets
 
 log = logging.getLogger(__name__)
 
@@ -104,6 +104,13 @@ class ArkfolioController:
             txnsview.append(t)
 
         df = pd.DataFrame(txnsview)
+        return df
+
+    def get_wallets(self) -> DataFrame:
+        """Get transactions from database
+        And convert to pandas dataframe"""
+        wallets: list[Wallet] = get_wallets(self.db, self.profile)
+        df = pd.json_normalize(data=[asdict(obj) for obj in wallets])
         return df
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:

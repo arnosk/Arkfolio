@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-09-15
-@modified: 2023-10-20
+@modified: 2023-10-21
 
 TkInter GUI for ArkFolio
 
@@ -31,6 +31,9 @@ class ArkfolioViewTk(Tk):
         self.button_txns = Button(text="Txns")
         self.button_txns.bind("<Button-1>", self.handle_button_txns)
         self.button_txns.pack()
+        self.button_wallets = Button(text="Wallets")
+        self.button_wallets.bind("<Button-1>", self.handle_button_wallets)
+        self.button_wallets.pack()
         self.bind("<F1>", self.show_help)
 
         self.f = Frame(self.master)
@@ -56,4 +59,9 @@ class ArkfolioViewTk(Tk):
     def handle_button_txns(self, event):
         dftxns: DataFrame = self.control.get_txns()
         self.table.model.df = dftxns
+        self.table.redraw()
+
+    def handle_button_wallets(self, event):
+        dfwallets: DataFrame = self.control.get_wallets()
+        self.table.model.df = dfwallets
         self.table.redraw()

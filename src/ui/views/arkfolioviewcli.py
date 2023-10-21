@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-10-18
+@modified: 2023-10-21
 
 Command editor UI for ArkFolio
 
@@ -146,6 +146,8 @@ class ArkfolioViewCli:
         print("---------------------------------")
         print("    Wallets")
         print("---------------------------------")
+        dfwallets: DataFrame = self.control.get_wallets()
+        print(dfwallets)
 
     def show_portfolio(self) -> None:
         """Show portfolio"""
