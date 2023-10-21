@@ -107,10 +107,27 @@ class ArkfolioController:
         return df
 
     def get_wallets(self) -> DataFrame:
-        """Get transactions from database
+        """Get wallets from database
         And convert to pandas dataframe"""
         wallets: list[Wallet] = get_wallets(self.db, self.profile)
-        df = pd.json_normalize(data=[asdict(obj) for obj in wallets])
+        walletsview: list = []
+        for wallet in wallets:
+            site_name = "-"
+            if wallet.site != None:
+                site_name = self.sitemodels[wallet.site.id].site.name
+            w = {
+                "site": site_name,
+                "name": wallet.name,
+                "type": wallet.addresstype.name,
+                "address": wallet.address,
+                "enabled": wallet.enabled,
+                "owned": wallet.owned,
+                "haschild": wallet.haschild,
+                "id": wallet.id,
+            }
+            walletsview.append(w)
+
+        df = pd.DataFrame(walletsview)
         return df
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:

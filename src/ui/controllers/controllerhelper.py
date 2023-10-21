@@ -129,7 +129,7 @@ def get_wallets(db: Db, profile: Profile) -> list[Wallet]:
     result = get_db_wallets(db, profile.id)
     if len(result) > 0:
         for res in result:
-            site = Site(id=res[1], name=res[7], sitetype=SiteType(value=res[8]))
+            site = Site(id=res[1], name="?", sitetype=SiteType.BLOCKCHAIN)
             wallet = Wallet(
                 profile=profile,
                 site=site,
