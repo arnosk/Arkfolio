@@ -34,6 +34,9 @@ class ArkfolioViewTk(Tk):
         self.button_wallets = Button(text="Wallets")
         self.button_wallets.bind("<Button-1>", self.handle_button_wallets)
         self.button_wallets.pack()
+        self.button_sitemodels = Button(text="Sitemodels")
+        self.button_sitemodels.bind("<Button-1>", self.handle_button_sitemodels)
+        self.button_sitemodels.pack()
         self.bind("<F1>", self.show_help)
 
         self.f = Frame(self.master)
@@ -57,11 +60,16 @@ class ArkfolioViewTk(Tk):
         self.destroy()
 
     def handle_button_txns(self, event):
-        dftxns: DataFrame = self.control.get_txns()
-        self.table.model.df = dftxns
+        df: DataFrame = self.control.get_txns()
+        self.table.model.df = df
         self.table.redraw()
 
     def handle_button_wallets(self, event):
-        dfwallets: DataFrame = self.control.get_wallets()
-        self.table.model.df = dfwallets
+        df: DataFrame = self.control.get_wallets()
+        self.table.model.df = df
+        self.table.redraw()
+
+    def handle_button_sitemodels(self, event):
+        df: DataFrame = self.control.get_wallet_sitemodels()
+        self.table.model.df = df
         self.table.redraw()

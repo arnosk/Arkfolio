@@ -78,7 +78,7 @@ class ArkfolioViewCli:
                 case Command(command="show" | "s"):
                     self.show_wallets()
                 case Command(command="add" | "a"):
-                    self.show_help()
+                    self.show_wallet_sitemodels()
                 case Command(command="remove" | "rem" | "r" | "del" | "d"):
                     self.show_help()
                 case Command(command="update" | "u"):
@@ -138,16 +138,24 @@ class ArkfolioViewCli:
         print("---------------------------------")
         print("    Transactions")
         print("---------------------------------")
-        dftxns: DataFrame = self.control.get_txns()
-        print(dftxns)
+        df: DataFrame = self.control.get_txns()
+        print(df)
 
     def show_wallets(self) -> None:
         """Show wallets"""
         print("---------------------------------")
         print("    Wallets")
         print("---------------------------------")
-        dfwallets: DataFrame = self.control.get_wallets()
-        print(dfwallets)
+        df: DataFrame = self.control.get_wallets()
+        print(df)
+
+    def show_wallet_sitemodels(self) -> None:
+        """Show wallets"""
+        print("---------------------------------")
+        print("    Wallets")
+        print("---------------------------------")
+        df: DataFrame = self.control.get_wallet_sitemodels()
+        print(df)
 
     def show_portfolio(self) -> None:
         """Show portfolio"""

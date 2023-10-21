@@ -15,7 +15,7 @@ from pandas import DataFrame
 
 import configprivate as conf
 from src.data.dbschemadata import Profile, Transaction, Wallet
-from src.data.dbschematypes import WalletAddressType
+from src.data.dbschematypes import SiteType, WalletAddressType
 from src.db.db import Db
 from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
@@ -104,6 +104,20 @@ class ArkfolioController:
             txnsview.append(t)
 
         df = pd.DataFrame(txnsview)
+        return df
+
+    def get_wallet_sitemodels(self) -> DataFrame:
+        sites: list = []
+        for sitemodel in self.sitemodels.values():
+            if sitemodel.site.enabled and sitemodel.site.sitetype != SiteType.INFO:
+                s = {
+                    "site": sitemodel.site.name,
+                    "type": sitemodel.site.sitetype.name,
+                    "id": sitemodel.site.id,
+                }
+                sites.append(s)
+
+        df = pd.DataFrame(sites)
         return df
 
     def get_wallets(self) -> DataFrame:
