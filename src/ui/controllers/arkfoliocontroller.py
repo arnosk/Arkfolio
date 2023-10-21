@@ -21,6 +21,7 @@ from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
 from src.errors.dberrors import DbError
+from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
 from src.models.sitemodelfinder import find_all_sitemodels
 from src.ui.controllers.controllerhelper import get_transactions
@@ -67,14 +68,42 @@ class ArkfolioController:
         """Get transactions from database
         And convert to pandas dataframe"""
         txns: list[Transaction] = get_transactions(self.db, self.profile)
+        txnsview: list = []
+        for txn in txns:
+            from_walletchildaddress = ""
+            from_walletchildtype = ""
+            to_walletchildaddress = ""
+            to_walletchildtype = ""
+            if txn.from_wallet.haschild and txn.from_walletchild != None:
+                from_walletchildaddress = txn.from_walletchild.address
+                from_walletchildtype = txn.from_walletchild.type.name
+            if txn.to_wallet.haschild and txn.to_walletchild != None:
+                to_walletchildaddress = txn.to_walletchild.address
+                to_walletchildtype = txn.to_walletchild.type.name
+            t = {
+                "datetime": convert_timestamp(txn.timestamp),
+                "txn_type": txn.transactiontype.name,
+                "site": txn.site.name,
+                "quantity": txn.quantity.amount,
+                "quantity.currency": txn.quantity.currency_symbol,
+                "fee": txn.fee.amount,
+                "fee.currency": txn.fee.currency_symbol,
+                "from_type": txn.from_wallet.addresstype.name,
+                "from_wallet.name": txn.from_wallet.name,
+                "from_wallet.address": txn.from_wallet.address,
+                "from_child.address": from_walletchildaddress,
+                "from_child.type": from_walletchildtype,
+                "to_type": txn.to_wallet.addresstype.name,
+                "to_wallet.name": txn.to_wallet.name,
+                "to_wallet.address": txn.to_wallet.address,
+                "to_child.address": to_walletchildaddress,
+                "to_child.type": to_walletchildtype,
+                "note": txn.note,
+                "id": txn.id,
+            }
+            txnsview.append(t)
 
-        """Converts list of objects to a pandas DataFrame
-        from src.func.helperfunc import convert_timestamp
-        print(f"{convert_timestamp(res[1])}:{res}")
-        """
-
-        # json_normalize is used this way to flatten the coindata object inside the pricedata
-        df = pd.json_normalize(data=[asdict(obj) for obj in txns])
+        df = pd.DataFrame(txnsview)
         return df
 
     def create_wallet(self, sitemodel: SiteModel, address: str) -> None:

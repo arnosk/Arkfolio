@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-09
-@modified: 2023-05-28
+@modified: 2023-10-21
 
 Money datatype
 From: https://github.com/py-moneyed/py-moneyed/blob/master/src/moneyed/classes.py
@@ -59,6 +59,10 @@ class Money:
 
     def __post_init__(self):
         self.multiplier = 10**self.decimal_places
+
+    @property
+    def amount(self) -> Decimal:
+        return self.amount_cents / self.multiplier
 
     @classmethod
     def mint(
@@ -253,5 +257,4 @@ class Money:
 
 
 def format_money(money: Money) -> str:
-    amount = money.amount_cents / money.multiplier
-    return f"{money.currency_symbol} {amount:.{money.precision}f}"
+    return f"{money.currency_symbol} {money.amount:.{money.precision}f}"

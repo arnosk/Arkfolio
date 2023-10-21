@@ -10,7 +10,7 @@ import logging
 from tkinter import BOTH, Button, Frame, Tk
 
 from pandas import DataFrame
-from pandastable import Table, TableModel
+from pandastable import Table, TableModel, config
 
 from src.ui.controllers.arkfoliocontroller import ArkfolioController
 
@@ -35,10 +35,10 @@ class ArkfolioViewTk(Tk):
 
         self.f = Frame(self.master)
         self.f.pack(fill=BOTH, expand=1)
-        self.df = TableModel.getSampleData()
-        self.table = Table(
-            self.f, dataframe=self.df, showtoolbar=True, showstatusbar=True
-        )
+        df = TableModel.getSampleData()
+        self.table = Table(self.f, dataframe=df, showtoolbar=True, showstatusbar=True)
+        options = {"fontsize": 8}
+        config.apply_options(options, self.table)
         self.table.show()
 
     def run(self, control: ArkfolioController) -> None:
@@ -55,8 +55,5 @@ class ArkfolioViewTk(Tk):
 
     def handle_button_txns(self, event):
         dftxns: DataFrame = self.control.get_txns()
-        self.df = dftxns
-        self.table = Table(
-            self.f, dataframe=self.df, showtoolbar=True, showstatusbar=True
-        )
-        self.table.show()
+        self.table.model.df = dftxns
+        self.table.redraw()
