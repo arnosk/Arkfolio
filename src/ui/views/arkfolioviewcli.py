@@ -156,15 +156,15 @@ class ArkfolioViewCli:
         df: DataFrame = self.control.get_wallet_sitemodels()
         print(df)
 
-    def wallets_add_check(self, cmd: Command, id_name: str) -> None:
+    def wallets_add_check(self, cmd: Command, id_or_name: str) -> None:
         print("---------------------------------")
         print("    Add wallet check")
         print("---------------------------------", end="")
         id = 0
-        if id_name.isdigit():
-            id = int(id_name)
+        if id_or_name.isdigit():
+            id = int(id_or_name)
         else:
-            id = self.control.get_sitemodel_id(id_name)
+            id = self.control.get_sitemodel_id(id_or_name)
 
         if id > 0:
             if self.control.check_wallet_sitemodel_id_exists(id):
