@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-21
+@modified: 2023-10-22
 
 Controller for ArkFolio
 
@@ -107,6 +107,7 @@ class ArkfolioController:
         return df
 
     def get_wallet_sitemodels(self) -> DataFrame:
+        """Return a df for all available wallets to be added"""
         sites: list = []
         for sitemodel in self.sitemodels.values():
             if sitemodel.site.enabled and sitemodel.site.sitetype != SiteType.INFO:
@@ -119,6 +120,23 @@ class ArkfolioController:
 
         df = pd.DataFrame(sites)
         return df
+
+    def get_sitemodel_id(self, name: str) -> int:
+        id = 0
+        for sitemodel in self.sitemodels.values():
+            if sitemodel.site.name.lower() == name.lower():
+                id = sitemodel.site.id
+                break
+        return id
+
+    def check_wallet_sitemodel_id_exists(self, id: int) -> bool:
+        """Check if id is existing for adding a wallet"""
+        exists = False
+        for sitemodel in self.sitemodels.values():
+            if sitemodel.site.id == id and sitemodel.site.sitetype != SiteType.INFO:
+                exists = True
+                break
+        return exists
 
     def get_wallets(self) -> DataFrame:
         """Get wallets from database

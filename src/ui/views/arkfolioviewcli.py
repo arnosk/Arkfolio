@@ -1,13 +1,14 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-10-21
+@modified: 2023-10-22
 
 Command editor UI for ArkFolio
 
 """
 import logging
 import sys
+from sre_compile import isstring
 
 from pandas import DataFrame
 
@@ -58,7 +59,7 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_txns()
+                    self.txns_show()
                 case Command(command="filter" | "f"):
                     self.show_help()
                 case Command(command="export" | "e"):
@@ -76,9 +77,11 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_wallets()
+                    self.wallets_show()
+                case Command(command="add" | "a", arguments=[id_name, *rest]):
+                    self.wallets_add_check(cmd, id_name)
                 case Command(command="add" | "a"):
-                    self.show_wallet_sitemodels()
+                    self.wallets_show_sitemodels()
                 case Command(command="remove" | "rem" | "r" | "del" | "d"):
                     self.show_help()
                 case Command(command="update" | "u"):
@@ -96,7 +99,7 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case Command(command="show" | "s"):
-                    self.show_portfolio()
+                    self.portfolio_show()
                 case Command(command="graph" | "g"):
                     self.show_help()
                 case Command(command="filter" | "f"):
@@ -107,7 +110,6 @@ class ArkfolioViewCli:
                     print(f"Unknown command {cmd.command!r}, try again.")
 
     def show_help(self) -> None:
-        """Show the available cli commands"""
         print("---------------------------------")
         print("    Help for Arkfolio CLI UI")
         print("---------------------------------")
@@ -133,32 +135,51 @@ class ArkfolioViewCli:
         print("        0xcF99cB3Be2F279D96B8ebF877aF22e05E58Db001")
         print("---------------------------------")
 
-    def show_txns(self) -> None:
-        """Show transactions"""
+    def txns_show(self) -> None:
         print("---------------------------------")
         print("    Transactions")
         print("---------------------------------")
         df: DataFrame = self.control.get_txns()
         print(df)
 
-    def show_wallets(self) -> None:
-        """Show wallets"""
+    def wallets_show(self) -> None:
         print("---------------------------------")
         print("    Wallets")
         print("---------------------------------")
         df: DataFrame = self.control.get_wallets()
         print(df)
 
-    def show_wallet_sitemodels(self) -> None:
-        """Show wallets"""
+    def wallets_show_sitemodels(self) -> None:
         print("---------------------------------")
-        print("    Wallets")
+        print("    Available wallet types")
         print("---------------------------------")
         df: DataFrame = self.control.get_wallet_sitemodels()
         print(df)
 
-    def show_portfolio(self) -> None:
-        """Show portfolio"""
+    def wallets_add_check(self, cmd: Command, id_name: str) -> None:
+        print("---------------------------------")
+        print("    Add wallet check")
+        print("---------------------------------", end="")
+        id = 0
+        if id_name.isdigit():
+            id = int(id_name)
+        else:
+            id = self.control.get_sitemodel_id(id_name)
+
+        if id > 0:
+            if self.control.check_wallet_sitemodel_id_exists(id):
+                self.wallets_add(id)
+            else:
+                print(f"\nUnknown id {cmd.arguments[0]!r}, try again.")
+        else:
+            print(f"\nUnknown argument {cmd.arguments[0]!r}, try again.")
+
+    def wallets_add(self, id: int) -> None:
+        print("\r    Add wallet                   ")
+        print("---------------------------------")
+        print(f"id: {id}")
+
+    def portfolio_show(self) -> None:
         print("---------------------------------")
         print("    Portfolio")
         print("---------------------------------")
