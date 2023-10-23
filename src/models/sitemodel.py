@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-26
-@modified: 2023-09-15
+@modified: 2023-10-23
 
 Abstract class for all sites
 
@@ -22,7 +22,7 @@ from src.db.dbscrapingtxn import (
     update_scrapingtxn_raw,
 )
 from src.db.dbsitemodel import get_sitemodel, insert_sitemodel, update_sitemodel
-from src.db.dbwallet import get_wallet_id_unknowns
+from src.db.dbwallet import get_wallet_id, get_wallet_id_unknowns
 from src.db.dbwalletchild import (
     get_walletchild_addresses,
     insert_walletchild,
@@ -109,7 +109,20 @@ class SiteModel(ABC):
                 # Change the master of the child to new master wallet
                 update_child_of_wallet_unkowns(db, wallet_uknowns_parent_id, child)
             else:
-                # TODO: Check if child address already a normal wallet address, then first remove that wallet
+                # Check if child address already defined as a normal wallet address,
+                # then user must first remove that wallet
+                wallet_child_check = wallet
+                wallet_child_check.address = child.address
+                wallet_exists_id = get_wallet_id(db, wallet_child_check)
+                if wallet_exists_id > 0:
+                    log.error(
+                        f"Child address already exists as normal wallet address: {child.address}, "
+                        f"Existing wallet id: {wallet_exists_id} on "
+                        f"{'No site' if wallet.site == None else wallet.site.name} "
+                        f"Please remove this wallet, before new child addresses can be added"
+                    )
+                    break
+
                 insert_walletchild(db, child)
         for child in childwallets:
             log.debug(
