@@ -109,6 +109,7 @@ class SiteModel(ABC):
                 # Change the master of the child to new master wallet
                 update_child_of_wallet_unkowns(db, wallet_uknowns_parent_id, child)
             else:
+                # TODO: Check if child address already a normal wallet address, then first remove that wallet
                 insert_walletchild(db, child)
         for child in childwallets:
             log.debug(
