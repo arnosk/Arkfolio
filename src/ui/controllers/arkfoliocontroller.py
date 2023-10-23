@@ -200,7 +200,7 @@ class ArkfolioController:
         walletchild_exists = check_walletchild_exists(self.db, wallet.address)
         if walletchild_exists:
             # TODO: Check if this is in the unknown wallet and make it a real wallet
-            # TODO: same if there added a child address when this is already in the unknown wallet
+            # TODO: same if the new wallet is adding a child address which this is already in the unknown wallet
             log.info(
                 f"Wallet already exists as a child address of existing wallet: "
                 f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
