@@ -20,6 +20,7 @@ from src.db.db import Db
 from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
 from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
+from src.db.dbwalletchild import check_walletchild_exists
 from src.errors.dberrors import DbError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
@@ -187,10 +188,19 @@ class ArkfolioController:
             or addresstype == WalletAddressType.ELECTRUM
         ):
             wallet.haschild = True
+
         wallet_exists = check_wallet_exists(self.db, wallet)
         if wallet_exists:
             log.info(
                 f"Wallet already exists with same site/chain and address: "
+                f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
+            )
+            return False
+
+        walletchild_exists = check_walletchild_exists(self.db, wallet.address)
+        if walletchild_exists:
+            log.info(
+                f"Wallet already exists as a child address of existing wallet: "
                 f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
             )
             return False
