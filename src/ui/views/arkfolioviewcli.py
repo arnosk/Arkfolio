@@ -180,14 +180,16 @@ class ArkfolioViewCli:
         print("---------------------------------")
         print(f"id: {id}")
         while True:
-            cmd_addr = get_input_command("Wallet address: ")
+            cmd_addr = get_input_command("Wallet address: ", to_lowercase=False)
             match cmd_addr:
                 case Command(command="quit" | "q" | "exit" | "e"):
                     break
                 case Command(command="help" | "h"):
                     self.show_help()
                 case _:
-                    cmd_name = get_input_command("Wallet name: ", "")
+                    cmd_name = get_input_command(
+                        "Wallet name: ", default_answer="", to_lowercase=False
+                    )
                     wallet_ok = self.control.add_wallet(
                         sitemodel=self.control.sitemodels[id],
                         address=cmd_addr.command,
