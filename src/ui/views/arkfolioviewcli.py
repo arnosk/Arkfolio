@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-16
-@modified: 2023-10-22
+@modified: 2023-10-23
 
 Command editor UI for ArkFolio
 
@@ -178,6 +178,25 @@ class ArkfolioViewCli:
         print("\r    Add wallet                   ")
         print("---------------------------------")
         print(f"id: {id}")
+        while True:
+            cmd_addr = get_input_command("Wallet address: ")
+            match cmd_addr:
+                case Command(command="quit" | "q" | "exit" | "e"):
+                    break
+                case Command(command="help" | "h"):
+                    self.show_help()
+                case _:
+                    cmd_name = get_input_command("Wallet name: ", "")
+                    wallet_ok = self.control.add_wallet(
+                        sitemodel=self.control.sitemodels[id],
+                        address=cmd_addr.command,
+                        name=cmd_name.command,
+                    )
+                    if wallet_ok:
+                        print("New wallet is added")
+                    else:
+                        print("Error adding new wallet")
+                    break
 
     def portfolio_show(self) -> None:
         print("---------------------------------")

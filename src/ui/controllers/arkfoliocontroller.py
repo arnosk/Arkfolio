@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-22
+@modified: 2023-10-23
 
 Controller for ArkFolio
 
@@ -162,17 +162,23 @@ class ArkfolioController:
         df = pd.DataFrame(walletsview)
         return df
 
-    def create_wallet(self, sitemodel: SiteModel, address: str) -> None:
+    def add_wallet(self, sitemodel: SiteModel, address: str, name: str = "") -> bool:
+        """Adding a new wallet
+
+        First check if it is possible, if not returns False
+        If address is master address also insert child addresses
+        When wallet inserted inserted returning True"""
         addresstype: WalletAddressType = sitemodel.check_address(address)
         if addresstype == WalletAddressType.INVALID:
             log.info(f"{sitemodel.site.name} addresstype is not valid: {address}")
-            return
+            return False
 
         wallet = Wallet(
             site=sitemodel.site,
             profile=self.profile,
             address=address,
             addresstype=addresstype,
+            name=name,
         )
         if (
             addresstype == WalletAddressType.XPUB
@@ -187,12 +193,12 @@ class ArkfolioController:
                 f"Wallet already exists with same site/chain and address: "
                 f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
             )
-            return
+            return False
 
         insert_wallet(self.db, wallet)
 
         if not wallet.haschild:
-            return
+            return True
 
         # Create child addresses for master address
         parentid = get_one_wallet_id(
@@ -204,9 +210,10 @@ class ArkfolioController:
             )
         wallet.id = parentid
         sitemodel.check_for_new_childwallets(self.db, wallet)
+        return True
 
     def tempCreateTestWallets(self) -> None:
         # Temp for testing first site, create wallet in db
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
-        self.create_wallet(self.sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
+        self.add_wallet(self.sitemodels[1], conf.BTC_ADDRESS[1])  # a whale
+        self.add_wallet(self.sitemodels[1], conf.BTC_ADDRESS[2])  # xpub
+        self.add_wallet(self.sitemodels[1], conf.BTC_ADDRESS[3])  # electrum mpk
