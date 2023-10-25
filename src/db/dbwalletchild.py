@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-04
-@modified: 2023-08-19
+@modified: 2023-10-25
 
 Database Handler Class
 
@@ -126,5 +126,13 @@ def update_child_of_wallet_unkowns(
         unknwonparentid,
         walletchild.address,
     )
+    db.execute(query, queryargs)
+    db.commit()
+
+
+def delete_walletchild_id(db: Db, id: int) -> None:
+    query = """DELETE FROM walletchild 
+                WHERE id=?;"""
+    queryargs = (id,)
     db.execute(query, queryargs)
     db.commit()

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-10-17
+@modified: 2023-10-25
 
 Database Handler Class
 
@@ -11,7 +11,6 @@ import logging
 from src.data.dbschemadata import Transaction
 from src.db.db import Db
 from src.errors.dberrors import DbError
-from src.func.helperfunc import convert_timestamp
 
 log = logging.getLogger(__name__)
 
@@ -144,3 +143,16 @@ def get_db_transactions(db: Db, profileid: int) -> list:
     queryargs = (profileid,)
     result = db.query(query, queryargs)
     return result
+
+
+def update_transaction_child_to_wallet(
+    db: Db, walletchild_id: int, walletchild_parentid: int, newwallet_id: int
+) -> None:
+    """Update a transaction:
+    The Child wallet address is changed to a normal wallet address"""
+    queryargs = (newwallet_id, walletchild_id, walletchild_parentid)
+    query = "UPDATE transaction SET from_walletchild_id=NULL and from_wallet_id=? WHERE from_walletchild_id=? AND from_wallet_id=?;"
+    db.execute(query, queryargs)
+    query = "UPDATE transaction SET to_walletchild_id=NULL and to_wallet_id=? WHERE to_walletchild_id=? AND to_wallet_id=?;"
+    db.execute(query, queryargs)
+    db.commit()

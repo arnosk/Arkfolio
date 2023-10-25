@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-10-16
-@modified: 2023-10-21
+@modified: 2023-10-25
 
 Helper functions for Controller
 
@@ -18,7 +18,9 @@ from src.data.dbschematypes import (
 from src.data.money import Money
 from src.db.db import Db
 from src.db.dbtransaction import get_db_transactions
-from src.db.dbwallet import get_db_wallets
+from src.db.dbwallet import get_db_wallets, get_wallet_id_unknowns
+from src.db.dbwalletchild import get_walletchild_id
+from src.errors.dberrors import DbError
 
 log = logging.getLogger(__name__)
 
@@ -143,3 +145,25 @@ def get_wallets(db: Db, profile: Profile) -> list[Wallet]:
             )
             wallets.append(wallet)
     return wallets
+
+
+def get_childwallet_id_walletunknown(
+    db: Db, childaddress: str, siteid: int, profileid: int
+) -> tuple[int, int]:
+    walletunknown_id = get_wallet_id_unknowns(db=db, siteid=siteid, profileid=profileid)
+    walletchildunknown_id = get_walletchild_id_from_wallet(
+        db=db, childaddress=childaddress, parentid=walletunknown_id
+    )
+    return (walletchildunknown_id, walletunknown_id)
+
+
+def get_walletchild_id_from_wallet(db: Db, childaddress: str, parentid: int) -> int:
+    walletchildunknown_id_res = get_walletchild_id(
+        db=db, address=childaddress, parentid=parentid
+    )
+    if len(walletchildunknown_id_res) > 1:
+        raise DbError(f"Error: to many child wallets with same address: {childaddress}")
+    if len(walletchildunknown_id_res) == 1:
+        return walletchildunknown_id_res[0]
+    else:
+        return 0
