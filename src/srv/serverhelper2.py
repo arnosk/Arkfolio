@@ -57,10 +57,10 @@ def get_wallet_owned(
         raise DbError(f"No wallets found with address: {address} for site {site.name}")
 
     # else
-    return get_wallet_unknowns(db, address, site, profileid)
+    return get_insert_childwallet_unknowns(db, address, site, profileid)
 
 
-def get_wallet_unknowns(
+def get_insert_childwallet_unknowns(
     db: Db, address: str, site: Site, profileid: int
 ) -> tuple[int, int]:
     """Get wallet id's from address

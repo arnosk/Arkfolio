@@ -19,8 +19,13 @@ from src.data.dbschematypes import SiteType, WalletAddressType
 from src.db.db import Db
 from src.db.dbinit import db_connect
 from src.db.dbprofile import check_profile_exists, get_profile, insert_profile
-from src.db.dbwallet import check_wallet_exists, get_one_wallet_id, insert_wallet
-from src.db.dbwalletchild import check_walletchild_exists
+from src.db.dbwallet import (
+    check_wallet_exists,
+    get_one_wallet_id,
+    get_wallet_id_unknowns,
+    insert_wallet,
+)
+from src.db.dbwalletchild import check_walletchild_exists, get_walletchild_id
 from src.errors.dberrors import DbError
 from src.func.helperfunc import convert_timestamp
 from src.models.sitemodel import SiteModel
@@ -197,21 +202,35 @@ class ArkfolioController:
             )
             return False
 
-        walletchild_exists = check_walletchild_exists(self.db, wallet.address)
-        if walletchild_exists:
-            # TODO: Check if this is a child address in the unknown wallet and make it a real wallet
-            log.info(
-                f"Wallet already exists as a child address of existing wallet: "
-                f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
-            )
-            return False
+        walletchild_exists_in_unknown = False
+        walletunknown_id = 0
+        walletchildunknown_id = 0
+        if not wallet.haschild:
+            walletchild_exists = check_walletchild_exists(self.db, wallet.address)
+            # walletchild_exists_in_unknown = ...
+            if walletchild_exists:
+                walletunknown_id = get_wallet_id_unknowns(
+                    db=self.db, siteid=sitemodel.site.id, profileid=self.profile.id
+                )
+                walletchildunknown_id_res = get_walletchild_id(
+                    db=self.db, address=address, parentid=walletunknown_id
+                )
+                if len(walletchildunknown_id_res) > 1:
+                    raise DbError(
+                        f"Error: to many UNKNOWN child wallets with same address: {address} on site: {sitemodel.site.name}"
+                    )
+                if len(walletchildunknown_id_res) == 1:
+                    walletchildunknown_id = walletchildunknown_id_res[0]
+                    walletchild_exists_in_unknown = True
+
+                if not walletchild_exists_in_unknown:
+                    log.info(
+                        f"Wallet already exists as a child address of existing wallet: "
+                        f"{'No site' if wallet.site == None else wallet.site.name}, {wallet.address}"
+                    )
+                    return False
 
         insert_wallet(self.db, wallet)
-
-        if not wallet.haschild:
-            return True
-
-        # Create child addresses for master address
         parentid = get_one_wallet_id(
             self.db, address, sitemodel.site.id, self.profile.id
         )
@@ -220,6 +239,21 @@ class ArkfolioController:
                 f"No wallet found for just created master address: {address} for site {sitemodel.site.name}"
             )
         wallet.id = parentid
+
+        if not wallet.haschild:
+            # need: walletchild_exists_in_unknown
+            #       walletchildunknown_id
+            #       Done: walletunknown_id
+            #       Done: wallet.id = walletnew.id
+            # if walletchild_exists_in_unknown:
+            #   - for all txns where from_walletchild_id=walletchildunknown_id and from_wallet_id=walletunknown_id
+            #     update transactions set from_walletchild_id = None and from_wallet_id = wallet.id
+            #   - for all txns where to_walletchild_id=walletchildunknown_id and to_wallet_id=walletunknown_id
+            #     update transactions set to_walletchild_id = None and to_wallet_id = wallet.id
+            #   - remove from walletchild where id=walletchildunknown_id and parent_id=walletunknown_id
+            return True
+
+        # Create child addresses for master address
         sitemodel.check_for_new_childwallets(self.db, wallet)
         return True
 
