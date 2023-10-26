@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-10-16
-@modified: 2023-10-25
+@modified: 2023-10-26
 
 Helper functions for Controller
 
@@ -164,6 +164,6 @@ def get_walletchild_id_from_wallet(db: Db, childaddress: str, parentid: int) -> 
     if len(walletchildunknown_id_res) > 1:
         raise DbError(f"Error: to many child wallets with same address: {childaddress}")
     if len(walletchildunknown_id_res) == 1:
-        return walletchildunknown_id_res[0]
+        return walletchildunknown_id_res[0][0]
     else:
         return 0

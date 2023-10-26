@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-18
-@modified: 2023-10-25
+@modified: 2023-10-26
 
 Controller for ArkFolio
 
@@ -202,8 +202,8 @@ class ArkfolioController:
             )
             return False
 
-        walletunknown_id = 0
-        walletchildunknown_id = 0
+        walletunknown_id: int = 0
+        walletchildunknown_id: int = 0
         if not wallet.haschild:
             walletchild_exists = check_walletchild_exists(self.db, wallet.address)
             if walletchild_exists:

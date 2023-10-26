@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-10-25
+@modified: 2023-10-26
 
 Database Handler Class
 
@@ -151,8 +151,8 @@ def update_transaction_child_to_wallet(
     """Update a transaction:
     The Child wallet address is changed to a normal wallet address"""
     queryargs = (newwallet_id, walletchild_id, walletchild_parentid)
-    query = "UPDATE transaction SET from_walletchild_id=NULL and from_wallet_id=? WHERE from_walletchild_id=? AND from_wallet_id=?;"
+    query = "UPDATE transactions SET from_walletchild_id=NULL, from_wallet_id=? WHERE from_walletchild_id=? AND from_wallet_id=?;"
     db.execute(query, queryargs)
-    query = "UPDATE transaction SET to_walletchild_id=NULL and to_wallet_id=? WHERE to_walletchild_id=? AND to_wallet_id=?;"
+    query = "UPDATE transactions SET to_walletchild_id=NULL, to_wallet_id=? WHERE to_walletchild_id=? AND to_wallet_id=?;"
     db.execute(query, queryargs)
     db.commit()
