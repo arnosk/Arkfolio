@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-10
-@modified: 2023-08-21
+@modified: 2023-10-27
 
 Helper functions for Server
 
@@ -109,15 +109,6 @@ def process_and_insert_rawtransaction(
     log.debug(
         f"Trying to insert a raw txn for profileid {profileid} and site {site.name} and chain {chain}: {txn}"
     )
-    txn_exists = check_transaction_exists(db, txn.txid)
-    if txn_exists:
-        # TODO: what if other profile has same transaction..., raise error?
-        log.exception(f"Transaction already exist with same hash {txn.txid}")
-        return False
-        raise DbError(
-            f"Not allowed to create new transaction with same hash {txn.txid}"
-        )
-
     fromwalletid = 0
     fromwalletchildid = 0
     towalletid = 0
@@ -138,6 +129,20 @@ def process_and_insert_rawtransaction(
         )
         towalletid, towalletchildid = get_wallet_owned(
             db, txn.to_wallet, site, profileid, True
+        )
+
+    txn_exists = check_transaction_exists(
+        db=db,
+        txid=txn.txid,
+        towalletid=towalletid,
+        towalletchildid=towalletchildid,
+    )
+    if txn_exists:
+        # TODO: what if other profile has same transaction..., raise error?
+        log.exception(f"Transaction already exist with same hash {txn.txid}")
+        return False
+        raise DbError(
+            f"Not allowed to create new transaction with same hash {txn.txid}"
         )
 
     quoteassetid = get_asset_id(db, txn.quote_asset, chain)

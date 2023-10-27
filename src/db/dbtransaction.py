@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-07-01
-@modified: 2023-10-26
+@modified: 2023-10-27
 
 Database Handler Class
 
@@ -16,7 +16,19 @@ log = logging.getLogger(__name__)
 
 
 def insert_transaction(db: Db, txn: Transaction) -> None:
-    txn_exists = check_transaction_exists(db, txn.txid)
+    if txn.to_walletchild == None:
+        txn_exists = check_transaction_exists(
+            db=db,
+            txid=txn.txid,
+            towalletid=txn.to_wallet.id,
+        )
+    else:
+        txn_exists = check_transaction_exists(
+            db=db,
+            txid=txn.txid,
+            towalletid=txn.to_wallet.id,
+            towalletchildid=txn.to_walletchild.id,
+        )
     if txn_exists:
         raise DbError(f"Not allowed to create new transaction with same hash {txn}")
     query = """INSERT OR IGNORE INTO transactions 
@@ -94,9 +106,18 @@ def insert_transaction_raw(
     return result
 
 
-def check_transaction_exists(db: Db, txid: str) -> bool:
-    """Checks if asset on site exists in db"""
-    result = get_transaction_ids(db, txid)
+def check_transaction_exists(
+    db: Db, txid: str, towalletid: int, towalletchildid: int = -1
+) -> bool:
+    """Checks if transaction exists in db
+    Ttransaction can have same txid, but other output address (normal or child)"""
+    if towalletchildid > 0:
+        query = "SELECT id FROM transactions WHERE txid=? AND to_walletchild_id=?;"
+    else:
+        # no to_walletchild
+        query = "SELECT id FROM transactions WHERE txid=? AND to_wallet_id=? AND to_walletchild_id=NULL;"
+    queryargs = (txid, towalletid, towalletchildid)
+    result = db.query(query, queryargs)
     if len(result) == 0:
         return False
     return True
