@@ -113,10 +113,11 @@ def check_transaction_exists(
     Ttransaction can have same txid, but other output address (normal or child)"""
     if towalletchildid > 0:
         query = "SELECT id FROM transactions WHERE txid=? AND to_walletchild_id=?;"
+        queryargs = (txid, towalletchildid)
     else:
         # no to_walletchild
         query = "SELECT id FROM transactions WHERE txid=? AND to_wallet_id=? AND to_walletchild_id=NULL;"
-    queryargs = (txid, towalletid, towalletchildid)
+        queryargs = (txid, towalletid, towalletchildid)
     result = db.query(query, queryargs)
     if len(result) == 0:
         return False
