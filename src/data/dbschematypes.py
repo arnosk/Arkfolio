@@ -9,6 +9,8 @@ Enum Classes for data in database
 from dataclasses import dataclass
 from enum import Enum
 
+from src.data.types import OrderedEnum
+
 
 class SiteType(Enum):
     """Class for type of website / exchange names"""
@@ -20,8 +22,9 @@ class SiteType(Enum):
     INFO = 4
 
 
-# @dataclass(frozen=True)
-class TransactionType(Enum):
+# @dataclass(frozen=True) # Because of txn.sort in _search_transactions (sitemodel.py)
+# But if frozen, the value cannot be used TransactionType(value=res) (controllerhelper.py)
+class TransactionType(OrderedEnum):
     """Class for type of transactions"""
 
     TRADE_BUY = 100

@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-25
-@modified: 2023-08-19
+@modified: 2023-10-27
 
 Data Classes for data from database
 
@@ -121,9 +121,9 @@ class TransactionRaw:
     txid: str
     from_wallet: str
     to_wallet: str
-    transactiontype: TransactionType
     quantity: int
     fee: int
+    transactiontype: TransactionType
     quote_asset: str = ""
     base_asset: str = ""
     fee_asset: str = ""

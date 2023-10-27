@@ -85,7 +85,7 @@ class SiteModel(ABC):
 
         insert_ignore_scrapingtxn_raw(db, wallet.id)
         last_time = get_scrapingtxn_timestamp_end(db, wallet)
-        txns = self.get_transactions(addresses, last_time)
+        txns: list[TransactionRaw] = self.get_transactions(addresses, last_time)
         txns.sort()
         log.debug(f"New found transactions: {len(txns)}")
         for txn in txns:
