@@ -187,13 +187,11 @@ class ArkfolioViewCli:
                 case Command(command="help" | "h"):
                     self.show_help()
                 case _:
-                    cmd_name = get_input_command(
-                        "Wallet name: ", default_answer="", to_lowercase=False
-                    )
+                    cmd_name = input("Wallet name: ")
                     wallet_ok = self.control.add_wallet(
                         sitemodel=self.control.sitemodels[id],
                         address=cmd_addr.command,
-                        name=cmd_name.command,
+                        name=cmd_name,
                     )
                     if wallet_ok:
                         print("New wallet is added")
