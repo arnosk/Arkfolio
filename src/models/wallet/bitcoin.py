@@ -1,7 +1,7 @@
 """
 @author: Arno
 @created: 2023-05-29
-@modified: 2023-08-25
+@modified: 2023-10-27
 
 Sitemodel for bitcoin blockchain
 
@@ -196,7 +196,9 @@ class Bitcoin(SiteModel):
         return result
 
     def get_transaction_info(self, addresses: list[str]) -> list[TransactionInfo]:
-        log.debug(f"Start getting transaction info for {self.site.name}")
+        log.debug(
+            f"Start getting transaction info for {len(addresses)} addresses on {self.site.name}. 1st Address {addresses[0]}"
+        )
         result = _get_transaction_info_blockchaininfo(addresses)
         return result
 
@@ -275,8 +277,10 @@ def _get_transactions_blockchaininfo(
                     )
                     break
 
+                # TODO: What if multiple inputs and acc == address_to? it always takes the last input address.
+                # This is not correct
                 for input in tx["inputs"]:
-                    address_from = input["prev_out"]["addr"]
+                    address_from = input["prev_out"].get("addr", "0000")
                     if address_from == acc:
                         tx_type = TransactionType.OUT_UNDEFINED
                         tx_fee = tx["fee"]
@@ -289,27 +293,54 @@ def _get_transactions_blockchaininfo(
                                 f"Cannot find value of transaction input: {input}"
                             )
 
-                for output in tx["out"]:
-                    addr = output.get("addr", "unknown")
-                    if addr == acc:
-                        tx_type = TransactionType.IN_UNDEFINED
-                        address_to = addr
+                # TODO: Transactions table can have row with same hash, output address is different
+                # TODO: Fee of transaction is connected to htxid (hash), don't count fee multiple time if hash is the same
+                # Acc is an input, so add all output as transactions
+                if tx_type == TransactionType.UNDEF_UNDEFINED:
+                    for output in tx["out"]:
+                        addr = output.get("addr", "unknown")
                         tx_value = output["value"]
 
-                txn = TransactionRaw(
-                    transactiontype=tx_type,
-                    timestamp=tx_time,
-                    txid=tx["hash"],
-                    quantity=tx_value,
-                    fee=tx_fee,
-                    from_wallet=address_from,
-                    to_wallet=address_to,
-                    quote_asset="BTC",
-                    fee_asset="BTC",
-                )
-                transactions.append(txn)
-                timestr = convert_timestamp(tx_time)
-                log.debug(f"{tx_i}: {tx_time} ({timestr}) - {txn.txid}")
+                        txn = TransactionRaw(
+                            transactiontype=tx_type,
+                            timestamp=tx_time,
+                            txid=tx["hash"],
+                            quantity=tx_value,
+                            fee=tx_fee,
+                            from_wallet=address_from,
+                            to_wallet=address_to,
+                            quote_asset="BTC",
+                            fee_asset="BTC",
+                        )
+                        transactions.append(txn)
+                        timestr = convert_timestamp(tx_time)
+                        log.debug(f"{tx_i}: {tx_time} ({timestr}) - {txn.txid}")
+
+                # Check if acc is in outputs
+                else:
+                    for output in tx["out"]:
+                        addr = output.get("addr", "unknown")
+                        if addr == acc:
+                            tx_type = TransactionType.IN_UNDEFINED
+                            if address_from == "0000":
+                                tx_type = TransactionType.IN_MINING
+                            address_to = addr
+                            tx_value = output["value"]
+
+                    txn = TransactionRaw(
+                        transactiontype=tx_type,
+                        timestamp=tx_time,
+                        txid=tx["hash"],
+                        quantity=tx_value,
+                        fee=tx_fee,
+                        from_wallet=address_from,
+                        to_wallet=address_to,
+                        quote_asset="BTC",
+                        fee_asset="BTC",
+                    )
+                    transactions.append(txn)
+                    timestr = convert_timestamp(tx_time)
+                    log.debug(f"{tx_i}: {tx_time} ({timestr}) - {txn.txid}")
 
             finished = tx_i >= n_tx or tx_time <= int(last_time)
             log.info(f"Limiting requests to 1 query per {backoff} seconds")
