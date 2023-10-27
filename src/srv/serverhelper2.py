@@ -109,6 +109,12 @@ def process_and_insert_rawtransaction(
     log.debug(
         f"Trying to insert a raw txn for profileid {profileid} and site {site.name} and chain {chain}: {txn}"
     )
+    if txn.transactiontype == TransactionType.UNDEF_UNDEFINED:
+        log.exception(f"Transaction has undefined transactiontype {txn.txid}")
+        raise DbError(
+            f"Not allowed to create new transaction with undefined transactiontype {txn.txid}"
+        )
+
     fromwalletid = 0
     fromwalletchildid = 0
     towalletid = 0
