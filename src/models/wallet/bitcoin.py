@@ -296,7 +296,7 @@ def _get_transactions_blockchaininfo(
                 # TODO: Transactions table can have row with same hash, output address is different
                 # TODO: Fee of transaction is connected to htxid (hash), don't count fee multiple time if hash is the same
                 # Acc is an input, so add all output as transactions
-                if tx_type == TransactionType.UNDEF_UNDEFINED:
+                if tx_type == TransactionType.OUT_UNDEFINED:
                     for output in tx["out"]:
                         addr = output.get("addr", "unknown")
                         tx_value = output["value"]
