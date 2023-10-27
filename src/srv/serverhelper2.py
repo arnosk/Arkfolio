@@ -114,7 +114,18 @@ def process_and_insert_rawtransaction(
     towalletid = 0
     towalletchildid = 0
 
-    if txn.transactiontype == TransactionType.IN_UNDEFINED:
+    if (
+        txn.transactiontype == TransactionType.IN_INCOME
+        or txn.transactiontype == TransactionType.IN_MINING
+        or txn.transactiontype == TransactionType.IN_STAKING
+        or txn.transactiontype == TransactionType.IN_DIVIDEND
+        or txn.transactiontype == TransactionType.IN_AIRDROP
+        or txn.transactiontype == TransactionType.IN_GIFT
+        or txn.transactiontype == TransactionType.IN_UNDEFINED
+        or txn.transactiontype == TransactionType.MOVE_DEPOSIT
+        or txn.transactiontype == TransactionType.TRADE_BUY
+        or txn.transactiontype == TransactionType.TRADE_BUY_SETTLEMENT
+    ):
         # wallet to is this users address
         fromwalletid, fromwalletchildid = get_wallet_owned(
             db, txn.from_wallet, site, profileid, True
@@ -122,7 +133,14 @@ def process_and_insert_rawtransaction(
         towalletid, towalletchildid = get_wallet_owned(
             db, txn.to_wallet, site, profileid, False
         )
-    if txn.transactiontype == TransactionType.OUT_UNDEFINED:
+    if (
+        txn.transactiontype == TransactionType.OUT_EXPENSE
+        or txn.transactiontype == TransactionType.OUT_LOSS
+        or txn.transactiontype == TransactionType.OUT_UNDEFINED
+        or txn.transactiontype == TransactionType.MOVE_WITHDRAWAL
+        or txn.transactiontype == TransactionType.TRADE_SELL
+        or txn.transactiontype == TransactionType.TRADE_SELL_SETTLEMENT
+    ):
         # wallet from is this users address
         fromwalletid, fromwalletchildid = get_wallet_owned(
             db, txn.from_wallet, site, profileid, False
